@@ -18,7 +18,8 @@ export const metadata: Metadata = {
     title: "Sane",
   },
   icons: {
-    icon: "/icon-192.png",
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
     apple: "/icon-192.png",
   },
 };
