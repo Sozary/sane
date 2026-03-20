@@ -42,6 +42,18 @@ export const meals = pgTable("meals", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Activities table
+export const activities = pgTable("activities", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  date: date("date").notNull(),
+  activityType: varchar("activity_type", { length: 100 }).notNull(),
+  durationMinutes: integer("duration_minutes").notNull(),
+  caloriesBurned: real("calories_burned").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Daily logs table
 export const dailyLogs = pgTable("daily_logs", {
   id: uuid("id").defaultRandom().primaryKey(),

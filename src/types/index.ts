@@ -34,6 +34,17 @@ export interface Meal {
   updatedAt: string;
 }
 
+export interface Activity {
+  id: string;
+  userId: string;
+  date: string;
+  activityType: string;
+  durationMinutes: number;
+  caloriesBurned: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface DailyLog {
   date: string;
   caloriesConsumed: number;

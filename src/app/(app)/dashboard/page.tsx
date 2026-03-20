@@ -4,10 +4,11 @@ import { useState, useEffect } from "react";
 import { CalorieRing } from "@/components/calorie-ring";
 import { MacroBar } from "@/components/macro-bar";
 import { MealCard } from "@/components/meal-card";
+import { ActivityCard } from "@/components/activity-card";
 import { DateNavigator } from "@/components/date-navigator";
-import { Flame, Footprints, Droplets, Plus } from "lucide-react";
+import { Flame, Plus } from "lucide-react";
 import Link from "next/link";
-import type { Meal } from "@/types";
+import type { Meal, Activity } from "@/types";
 
 interface DashboardData {
   caloriesConsumed: number;
@@ -15,9 +16,10 @@ interface DashboardData {
   carbsG: number;
   proteinG: number;
   fatG: number;
-  steps: number;
-  waterMl: number;
+  calorieGoal: number;
+  macroGoals: { carbsG: number; proteinG: number; fatG: number };
   meals: Meal[];
+  activities: Activity[];
 }
 
 function formatDate(date: Date): string {
@@ -32,14 +34,13 @@ export default function DashboardPage() {
     carbsG: 0,
     proteinG: 0,
     fatG: 0,
-    steps: 0,
-    waterMl: 0,
+    calorieGoal: 2000,
+    macroGoals: { carbsG: 200, proteinG: 150, fatG: 67 },
     meals: [],
+    activities: [],
   });
 
-  const calorieGoal = 2000; // TODO: from user profile
-  const macroGoals = { carbsG: 200, proteinG: 150, fatG: 67 };
-  const remaining = Math.max(0, calorieGoal - data.caloriesConsumed + data.caloriesBurned);
+  const remaining = Math.max(0, data.calorieGoal - data.caloriesConsumed + data.caloriesBurned);
 
   useEffect(() => {
     async function fetchData() {
@@ -63,7 +64,7 @@ export default function DashboardPage() {
 
       {/* Calorie Ring */}
       <div className="flex flex-col items-center gap-3">
-        <CalorieRing value={data.caloriesConsumed} max={calorieGoal} size={200} strokeWidth={10}>
+        <CalorieRing value={data.caloriesConsumed} max={data.calorieGoal} size={200} strokeWidth={10}>
           <span className="text-4xl font-bold tabular-nums">{remaining.toLocaleString("fr-FR")}</span>
           <span className="text-xs text-muted-foreground">kcal restantes</span>
         </CalorieRing>
@@ -84,36 +85,14 @@ export default function DashboardPage() {
 
       {/* Macro Bars */}
       <div className="space-y-3">
-        <MacroBar label="Glucides" current={data.carbsG} goal={macroGoals.carbsG} color="#3B82F6" />
-        <MacroBar label="Protéines" current={data.proteinG} goal={macroGoals.proteinG} color="#EF4444" />
-        <MacroBar label="Lipides" current={data.fatG} goal={macroGoals.fatG} color="#F59E0B" />
+        <MacroBar label="Glucides" current={data.carbsG} goal={data.macroGoals.carbsG} color="#3B82F6" />
+        <MacroBar label="Protéines" current={data.proteinG} goal={data.macroGoals.proteinG} color="#EF4444" />
+        <MacroBar label="Lipides" current={data.fatG} goal={data.macroGoals.fatG} color="#F59E0B" />
       </div>
 
-      {/* Activity */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-xl bg-card border border-border p-4 flex items-center gap-3">
-          <Footprints className="size-5 text-muted-foreground" />
-          <div>
-            <p className="text-sm font-semibold tabular-nums">{data.steps.toLocaleString("fr-FR")}</p>
-            <p className="text-xs text-muted-foreground">Pas</p>
-          </div>
-        </div>
-        <div className="rounded-xl bg-card border border-border p-4 flex items-center gap-3">
-          <Droplets className="size-5 text-blue-500" />
-          <div>
-            <p className="text-sm font-semibold tabular-nums">
-              {data.waterMl >= 1000
-                ? `${(data.waterMl / 1000).toFixed(1).replace(".", ",")} L`
-                : `${data.waterMl} ml`}
-            </p>
-            <p className="text-xs text-muted-foreground">Eau</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Journal */}
+      {/* Nourriture */}
       <div className="space-y-3">
-        <h2 className="font-semibold text-lg">Journal</h2>
+        <h2 className="font-semibold text-lg">Nourriture</h2>
         {data.meals.length > 0 ? (
           <div className="space-y-2">
             {data.meals.map((meal) => (
@@ -128,7 +107,7 @@ export default function DashboardPage() {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground text-center py-8">
+          <p className="text-sm text-muted-foreground text-center py-4">
             Aucun repas enregistré
           </p>
         )}
@@ -138,6 +117,35 @@ export default function DashboardPage() {
         >
           <Plus className="size-5" />
           <span className="text-sm font-medium">Ajouter un repas</span>
+        </Link>
+      </div>
+
+      {/* Activités */}
+      <div className="space-y-3">
+        <h2 className="font-semibold text-lg">Activités</h2>
+        {data.activities.length > 0 ? (
+          <div className="space-y-2">
+            {data.activities.map((activity) => (
+              <ActivityCard
+                key={activity.id}
+                id={activity.id}
+                activityType={activity.activityType}
+                durationMinutes={activity.durationMinutes}
+                caloriesBurned={activity.caloriesBurned}
+              />
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground text-center py-4">
+            Aucune activité enregistrée
+          </p>
+        )}
+        <Link
+          href="/activities/new"
+          className="flex items-center justify-center gap-2 w-full h-12 rounded-xl border-2 border-dashed border-border text-muted-foreground hover:border-foreground hover:text-foreground transition-colors"
+        >
+          <Plus className="size-5" />
+          <span className="text-sm font-medium">Ajouter une activité</span>
         </Link>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { meals, dailyLogs } from "@/lib/db/schema";
+import { users, meals, activities, dailyLogs } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import {
   dailyLogQuerySchema,
@@ -27,6 +27,23 @@ export async function GET(request: NextRequest) {
   }
   const { date } = parsed.data;
 
+  // Get user goals
+  const [user] = await db
+    .select({
+      calorieGoal: users.calorieGoal,
+      macroCarbsPct: users.macroCarbsPct,
+      macroProteinPct: users.macroProteinPct,
+      macroFatPct: users.macroFatPct,
+    })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  const calorieGoal = user?.calorieGoal ?? 2000;
+  const carbsPct = user?.macroCarbsPct ?? 40;
+  const proteinPct = user?.macroProteinPct ?? 30;
+  const fatPct = user?.macroFatPct ?? 30;
+
   // Get meals for the day
   const dayMeals = await db
     .select()
@@ -44,20 +61,29 @@ export async function GET(request: NextRequest) {
     { caloriesConsumed: 0, carbsG: 0, proteinG: 0, fatG: 0 }
   );
 
-  // Get daily log (steps, water, burned)
-  const [log] = await db
+  // Get activities for the day
+  const dayActivities = await db
     .select()
-    .from(dailyLogs)
-    .where(and(eq(dailyLogs.userId, userId), eq(dailyLogs.date, date)))
-    .limit(1);
+    .from(activities)
+    .where(and(eq(activities.userId, userId), eq(activities.date, date)));
+
+  const caloriesBurned = dayActivities.reduce(
+    (sum, a) => sum + (a.caloriesBurned ?? 0),
+    0
+  );
 
   return NextResponse.json({
     date,
     ...totals,
-    caloriesBurned: log?.caloriesBurned ?? 0,
-    steps: log?.steps ?? 0,
-    waterMl: log?.waterMl ?? 0,
+    caloriesBurned,
+    calorieGoal,
+    macroGoals: {
+      carbsG: Math.round((calorieGoal * carbsPct / 100) / 4),
+      proteinG: Math.round((calorieGoal * proteinPct / 100) / 4),
+      fatG: Math.round((calorieGoal * fatPct / 100) / 9),
+    },
     meals: dayMeals,
+    activities: dayActivities,
   });
 }
 

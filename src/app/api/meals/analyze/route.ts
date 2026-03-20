@@ -19,5 +19,16 @@ export async function POST(request: Request) {
   const mimeType = file.type;
 
   const analysis = await analyzeMealPhoto(base64, mimeType);
-  return NextResponse.json(analysis);
+
+  // Map snake_case AI response to camelCase frontend types
+  const mapped = {
+    name: analysis.name,
+    calories: analysis.calories,
+    carbsG: analysis.carbs_g,
+    proteinG: analysis.protein_g,
+    fatG: analysis.fat_g,
+    weightG: analysis.weight_g,
+    score: analysis.score,
+  };
+  return NextResponse.json(mapped);
 }

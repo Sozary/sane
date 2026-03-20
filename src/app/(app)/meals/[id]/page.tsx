@@ -29,7 +29,6 @@ export default function MealDetailPage() {
   const [carbsG, setCarbsG] = useState("");
   const [proteinG, setProteinG] = useState("");
   const [fatG, setFatG] = useState("");
-  const [weightG, setWeightG] = useState("");
   const [score, setScore] = useState<number | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -48,7 +47,6 @@ export default function MealDetailPage() {
         setCarbsG(String(meal.carbsG));
         setProteinG(String(meal.proteinG));
         setFatG(String(meal.fatG));
-        if (meal.weightG) setWeightG(String(meal.weightG));
         setScore(meal.score);
         setImageUrl(meal.imageUrl);
         setIsFavorite(meal.isFavorite);
@@ -75,7 +73,6 @@ export default function MealDetailPage() {
           carbsG: Number(carbsG) || 0,
           proteinG: Number(proteinG) || 0,
           fatG: Number(fatG) || 0,
-          weightG: weightG ? Number(weightG) : null,
           isFavorite,
         }),
       });
@@ -235,22 +232,6 @@ export default function MealDetailPage() {
             <span className="text-xs text-muted-foreground">g</span>
           </div>
         ))}
-      </div>
-
-      {/* Weight */}
-      <div className="space-y-2">
-        <Label htmlFor="weight">Poids (optionnel)</Label>
-        <div className="flex items-center gap-2">
-          <Input
-            id="weight"
-            type="number"
-            placeholder="0"
-            value={weightG}
-            onChange={(e) => setWeightG(e.target.value)}
-            className="h-11"
-          />
-          <span className="text-sm text-muted-foreground shrink-0">g</span>
-        </div>
       </div>
 
       {/* Score badge */}

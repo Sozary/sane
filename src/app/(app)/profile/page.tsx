@@ -41,6 +41,10 @@ export default function ProfilePage() {
   const [weightKg, setWeightKg] = useState("");
   const [age, setAge] = useState("");
   const [gender, setGender] = useState<Gender | null>(null);
+  const [originalWeightKg, setOriginalWeightKg] = useState("");
+  const [originalHeightCm, setOriginalHeightCm] = useState("");
+  const [originalAge, setOriginalAge] = useState("");
+  const [showRecalcModal, setShowRecalcModal] = useState(false);
   const [calorieGoal, setCalorieGoal] = useState(2000);
   const [carbsPct, setCarbsPct] = useState(40);
   const [proteinPct, setProteinPct] = useState(30);
@@ -54,9 +58,18 @@ export default function ProfilePage() {
         const profile: UserProfile = await res.json();
         setName(profile.name || "");
         setEmail(profile.email);
-        if (profile.heightCm) setHeightCm(String(profile.heightCm));
-        if (profile.weightKg) setWeightKg(String(profile.weightKg));
-        if (profile.age) setAge(String(profile.age));
+        if (profile.heightCm) {
+          setHeightCm(String(profile.heightCm));
+          setOriginalHeightCm(String(profile.heightCm));
+        }
+        if (profile.weightKg) {
+          setWeightKg(String(profile.weightKg));
+          setOriginalWeightKg(String(profile.weightKg));
+        }
+        if (profile.age) {
+          setAge(String(profile.age));
+          setOriginalAge(String(profile.age));
+        }
         setGender(profile.gender);
         setCalorieGoal(profile.calorieGoal);
         setCarbsPct(profile.macroCarbsPct);
@@ -91,7 +104,7 @@ export default function ProfilePage() {
     fat: setFatPct,
   };
 
-  const handleSave = async () => {
+  const doSave = async (goalOverride?: number) => {
     setSaving(true);
     try {
       const res = await fetch("/api/user/profile", {
@@ -103,7 +116,7 @@ export default function ProfilePage() {
           weightKg: weightKg ? Number(weightKg) : null,
           age: age ? Number(age) : null,
           gender,
-          calorieGoal,
+          calorieGoal: goalOverride ?? calorieGoal,
           macroCarbsPct: carbsPct,
           macroProteinPct: proteinPct,
           macroFatPct: fatPct,
@@ -117,6 +130,38 @@ export default function ProfilePage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const physicalDataChanged =
+    weightKg !== originalWeightKg ||
+    heightCm !== originalHeightCm ||
+    age !== originalAge;
+
+  const handleSave = async () => {
+    if (physicalDataChanged) {
+      setShowRecalcModal(true);
+    } else {
+      doSave();
+    }
+  };
+
+  const handleRecalcConfirm = () => {
+    setShowRecalcModal(false);
+    const w = Number(weightKg);
+    const h = Number(heightCm);
+    const a = Number(age);
+    if (w > 0 && h > 0 && a > 0 && gender) {
+      const tdee = calculateTDEE(w, h, a, gender);
+      setCalorieGoal(tdee);
+      doSave(tdee);
+    } else {
+      doSave();
+    }
+  };
+
+  const handleRecalcDecline = () => {
+    setShowRecalcModal(false);
+    doSave();
   };
 
   const handleLogout = async () => {
@@ -181,13 +226,6 @@ export default function ProfilePage() {
               <span className="text-sm text-muted-foreground">kcal</span>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={recalculateTDEE}
-            className="w-full text-sm font-medium py-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
-          >
-            Recalculer depuis mon profil
-          </button>
         </CardContent>
       </Card>
 
@@ -295,12 +333,11 @@ export default function ProfilePage() {
                 <button
                   key={g.value}
                   type="button"
-                  onClick={() => setGender(g.value)}
                   className={cn(
                     "h-10 rounded-lg text-sm font-medium transition-all border",
                     gender === g.value
                       ? "text-white border-transparent"
-                      : "bg-background border-border text-muted-foreground hover:text-foreground"
+                      : "bg-background border-border text-muted-foreground pointer-events-none opacity-70"
                   )}
                   style={
                     gender === g.value
@@ -337,6 +374,35 @@ export default function ProfilePage() {
           </Button>
         </CardContent>
       </Card>
+
+      {/* Recalculate TDEE modal */}
+      {showRecalcModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className="bg-background rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-xl">
+            <h3 className="text-lg font-bold">Recalculer l&apos;objectif ?</h3>
+            <p className="text-sm text-muted-foreground">
+              Votre profil physique a changé. Voulez-vous recalculer votre objectif calorique ?
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={handleRecalcDecline}
+                className="flex-1 h-11 rounded-xl border border-border font-medium text-sm hover:bg-muted transition-colors"
+              >
+                Non
+              </button>
+              <button
+                type="button"
+                onClick={handleRecalcConfirm}
+                className="flex-1 h-11 rounded-xl font-medium text-sm text-white"
+                style={{ backgroundColor: "#E8384F" }}
+              >
+                Oui
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Save button */}
       <button

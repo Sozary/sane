@@ -36,7 +36,6 @@ function NewMealForm() {
   const [carbsG, setCarbsG] = useState("");
   const [proteinG, setProteinG] = useState("");
   const [fatG, setFatG] = useState("");
-  const [weightG, setWeightG] = useState("");
   const [score, setScore] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -50,7 +49,6 @@ function NewMealForm() {
         setCarbsG(String(analysis.carbsG || ""));
         setProteinG(String(analysis.proteinG || ""));
         setFatG(String(analysis.fatG || ""));
-        if (analysis.weightG) setWeightG(String(analysis.weightG));
         if (analysis.score) setScore(analysis.score);
       } catch {
         // ignore parse errors
@@ -73,7 +71,6 @@ function NewMealForm() {
           carbsG: Number(carbsG) || 0,
           proteinG: Number(proteinG) || 0,
           fatG: Number(fatG) || 0,
-          weightG: weightG ? Number(weightG) : undefined,
           score: score ?? undefined,
         }),
       });
@@ -182,22 +179,6 @@ function NewMealForm() {
             <span className="text-xs text-muted-foreground">g</span>
           </div>
         ))}
-      </div>
-
-      {/* Weight */}
-      <div className="space-y-2">
-        <Label htmlFor="weight">Poids (optionnel)</Label>
-        <div className="flex items-center gap-2">
-          <Input
-            id="weight"
-            type="number"
-            placeholder="0"
-            value={weightG}
-            onChange={(e) => setWeightG(e.target.value)}
-            className="h-11"
-          />
-          <span className="text-sm text-muted-foreground shrink-0">g</span>
-        </div>
       </div>
 
       {/* Score badge */}
