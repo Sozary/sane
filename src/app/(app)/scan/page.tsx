@@ -44,7 +44,7 @@ export default function ScanPage() {
         body: formData,
       });
       if (res.status === 422) {
-        setError("Repas non reconnu. Veuillez prendre une autre photo ou l'entrer manuellement.");
+        setError("Repas non reconnu. Veuillez reprendre une photo ou essayer un autre angle.");
         return;
       }
       if (!res.ok) throw new Error("Analysis failed");
@@ -142,24 +142,36 @@ export default function ScanPage() {
             )}
           </div>
 
-          {/* Error message */}
+          {/* Not recognized modal */}
           {error && (
-            <div className="text-center space-y-2">
-              <p className="text-sm text-destructive font-medium">
-                {error}
-              </p>
-              <Link
-                href="/meals/new"
-                className="text-sm font-medium underline-offset-4 hover:underline"
-                style={{ color: "#E8384F" }}
-              >
-                Entrer manuellement
-              </Link>
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+              <div className="bg-background rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-xl">
+                <h3 className="text-lg font-bold text-center">Repas non reconnu</h3>
+                <div className="flex flex-col gap-3">
+                  <button
+                    type="button"
+                    onClick={() => { setError(null); handleReset(); }}
+                    className={cn(
+                      "w-full h-11 rounded-xl font-medium text-sm text-white flex items-center justify-center gap-2"
+                    )}
+                    style={{ backgroundColor: "#E8384F" }}
+                  >
+                    <RotateCcw className="size-4" />
+                    Reprendre une photo
+                  </button>
+                  <Link
+                    href="/meals/new"
+                    className="w-full h-11 rounded-xl font-medium text-sm border border-border flex items-center justify-center gap-2 hover:bg-muted transition-colors"
+                  >
+                    Entrer manuellement
+                  </Link>
+                </div>
+              </div>
             </div>
           )}
 
           {/* Action buttons */}
-          {!analyzing && (
+          {!analyzing && !error && (
             <div className="flex items-center gap-3">
               <Button
                 variant="outline"
