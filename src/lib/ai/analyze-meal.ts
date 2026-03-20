@@ -28,7 +28,10 @@ export interface MealAnalysisResult {
 
 const SYSTEM_PROMPT = `Tu es un nutritionniste expert. Analyse cette photo de repas et estime les valeurs nutritionnelles.
 
-Réponds UNIQUEMENT avec un objet JSON valide, sans texte additionnel :
+Si la photo ne contient pas de nourriture ou de repas reconnaissable, réponds UNIQUEMENT avec :
+{"error": "not_food"}
+
+Sinon, réponds UNIQUEMENT avec un objet JSON valide, sans texte additionnel :
 {
   "name": "Nom du plat en français",
   "calories": nombre (kcal total estimé),
@@ -85,7 +88,10 @@ export async function analyzeMealPhoto(imageBase64: string, mimeType: string): P
 
 const TEXT_SYSTEM_PROMPT = `Tu es un nutritionniste expert. À partir de la description textuelle d'un repas, estime les valeurs nutritionnelles.
 
-Réponds UNIQUEMENT avec un objet JSON valide, sans texte additionnel :
+Si la description ne correspond pas à de la nourriture ou à un repas reconnaissable, réponds UNIQUEMENT avec :
+{"error": "not_food"}
+
+Sinon, réponds UNIQUEMENT avec un objet JSON valide, sans texte additionnel :
 {
   "name": "Nom du plat en français",
   "calories": nombre (kcal total estimé),

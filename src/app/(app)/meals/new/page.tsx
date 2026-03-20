@@ -40,6 +40,7 @@ function NewMealForm() {
   const [score, setScore] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [estimating, setEstimating] = useState(false);
+  const [estimateError, setEstimateError] = useState<string | null>(null);
 
   useEffect(() => {
     const analysisParam = searchParams.get("analysis");
@@ -61,12 +62,17 @@ function NewMealForm() {
   const handleEstimate = async () => {
     if (!description.trim()) return;
     setEstimating(true);
+    setEstimateError(null);
     try {
       const res = await fetch("/api/meals/analyze-text", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ description: description.trim() }),
       });
+      if (res.status === 422) {
+        setEstimateError("Repas non reconnu. Essayez une description plus précise ou remplissez les champs manuellement.");
+        return;
+      }
       if (res.ok) {
         const analysis = await res.json();
         setName(analysis.name || description.trim());
@@ -77,7 +83,7 @@ function NewMealForm() {
         if (analysis.score) setScore(analysis.score);
       }
     } catch {
-      // error handling
+      setEstimateError("L'estimation a échoué. Veuillez réessayer.");
     } finally {
       setEstimating(false);
     }
@@ -155,6 +161,11 @@ function NewMealForm() {
             </>
           )}
         </button>
+        {estimateError && (
+          <p className="text-sm text-destructive text-center font-medium">
+            {estimateError}
+          </p>
+        )}
       </div>
 
       <div className="relative flex items-center">

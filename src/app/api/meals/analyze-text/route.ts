@@ -16,6 +16,10 @@ export async function POST(request: Request) {
 
   const analysis = await analyzeMealDescription(description.trim());
 
+  if ("error" in analysis && (analysis as Record<string, unknown>).error === "not_food") {
+    return NextResponse.json({ error: "not_food" }, { status: 422 });
+  }
+
   const mapped = {
     name: analysis.name,
     calories: analysis.calories,

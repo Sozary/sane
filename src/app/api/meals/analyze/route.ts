@@ -20,6 +20,11 @@ export async function POST(request: Request) {
 
   const analysis = await analyzeMealPhoto(base64, mimeType);
 
+  // Check if AI couldn't recognize food
+  if ("error" in analysis && (analysis as Record<string, unknown>).error === "not_food") {
+    return NextResponse.json({ error: "not_food" }, { status: 422 });
+  }
+
   // Map snake_case AI response to camelCase frontend types
   const mapped = {
     name: analysis.name,

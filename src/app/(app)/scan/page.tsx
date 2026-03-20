@@ -43,6 +43,10 @@ export default function ScanPage() {
         method: "POST",
         body: formData,
       });
+      if (res.status === 422) {
+        setError("Repas non reconnu. Veuillez prendre une autre photo ou l'entrer manuellement.");
+        return;
+      }
       if (!res.ok) throw new Error("Analysis failed");
       const analysis = await res.json();
       router.push(
@@ -140,9 +144,18 @@ export default function ScanPage() {
 
           {/* Error message */}
           {error && (
-            <p className="text-sm text-destructive text-center font-medium">
-              {error}
-            </p>
+            <div className="text-center space-y-2">
+              <p className="text-sm text-destructive font-medium">
+                {error}
+              </p>
+              <Link
+                href="/meals/new"
+                className="text-sm font-medium underline-offset-4 hover:underline"
+                style={{ color: "#E8384F" }}
+              >
+                Entrer manuellement
+              </Link>
+            </div>
           )}
 
           {/* Action buttons */}
