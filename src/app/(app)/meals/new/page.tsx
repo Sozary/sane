@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, Flame, Loader2 } from "lucide-react";
+import { ArrowLeft, Flame, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,8 +36,10 @@ function NewMealForm() {
   const [carbsG, setCarbsG] = useState("");
   const [proteinG, setProteinG] = useState("");
   const [fatG, setFatG] = useState("");
+  const [description, setDescription] = useState("");
   const [score, setScore] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [estimating, setEstimating] = useState(false);
 
   useEffect(() => {
     const analysisParam = searchParams.get("analysis");
@@ -55,6 +57,31 @@ function NewMealForm() {
       }
     }
   }, [searchParams]);
+
+  const handleEstimate = async () => {
+    if (!description.trim()) return;
+    setEstimating(true);
+    try {
+      const res = await fetch("/api/meals/analyze-text", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description: description.trim() }),
+      });
+      if (res.ok) {
+        const analysis = await res.json();
+        setName(analysis.name || description.trim());
+        setCalories(String(analysis.calories || ""));
+        setCarbsG(String(analysis.carbsG || ""));
+        setProteinG(String(analysis.proteinG || ""));
+        setFatG(String(analysis.fatG || ""));
+        if (analysis.score) setScore(analysis.score);
+      }
+    } catch {
+      // error handling
+    } finally {
+      setEstimating(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!name.trim() || !calories) return;
@@ -94,6 +121,46 @@ function NewMealForm() {
           </Button>
         </Link>
         <h1 className="text-xl font-bold">Nouveau repas</h1>
+      </div>
+
+      {/* AI description estimate */}
+      <div className="space-y-2">
+        <Label htmlFor="description">Décrivez votre repas</Label>
+        <textarea
+          id="description"
+          placeholder="Ex : Un sandwich jambon-beurre avec une salade verte et un café"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={3}
+          className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm resize-none outline-none focus:ring-2 focus:ring-[#E8384F]/30 focus:border-[#E8384F] transition-colors"
+        />
+        <button
+          type="button"
+          onClick={handleEstimate}
+          disabled={estimating || !description.trim()}
+          className={cn(
+            "w-full h-11 rounded-xl font-medium text-sm text-white flex items-center justify-center gap-2 transition-opacity disabled:opacity-50 disabled:pointer-events-none"
+          )}
+          style={{ backgroundColor: "#E8384F" }}
+        >
+          {estimating ? (
+            <>
+              <Loader2 className="size-4 animate-spin" />
+              Estimation en cours...
+            </>
+          ) : (
+            <>
+              <Sparkles className="size-4" />
+              Estimer par l&apos;IA
+            </>
+          )}
+        </button>
+      </div>
+
+      <div className="relative flex items-center">
+        <div className="flex-1 border-t border-border" />
+        <span className="px-3 text-xs text-muted-foreground">ou remplir manuellement</span>
+        <div className="flex-1 border-t border-border" />
       </div>
 
       {/* Meal name */}
