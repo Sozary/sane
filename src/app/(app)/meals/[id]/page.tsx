@@ -1,0 +1,301 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { ArrowLeft, Flame, Heart, Loader2, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ScoreBadge } from "@/components/score-badge";
+import { cn } from "@/lib/utils";
+import Link from "next/link";
+import type { Meal, MealType } from "@/types";
+
+const MEAL_TYPES: { value: MealType; label: string }[] = [
+  { value: "breakfast", label: "Petit-déj" },
+  { value: "lunch", label: "Déjeuner" },
+  { value: "dinner", label: "Dîner" },
+  { value: "snack", label: "Collation" },
+];
+
+export default function MealDetailPage() {
+  const router = useRouter();
+  const { id } = useParams<{ id: string }>();
+
+  const [loading, setLoading] = useState(true);
+  const [name, setName] = useState("");
+  const [mealType, setMealType] = useState<MealType>("lunch");
+  const [calories, setCalories] = useState("");
+  const [carbsG, setCarbsG] = useState("");
+  const [proteinG, setProteinG] = useState("");
+  const [fatG, setFatG] = useState("");
+  const [weightG, setWeightG] = useState("");
+  const [score, setScore] = useState<number | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    async function fetchMeal() {
+      try {
+        const res = await fetch(`/api/meals/${id}`);
+        if (!res.ok) throw new Error("Failed to fetch");
+        const meal: Meal = await res.json();
+        setName(meal.name);
+        setMealType(meal.mealType);
+        setCalories(String(meal.calories));
+        setCarbsG(String(meal.carbsG));
+        setProteinG(String(meal.proteinG));
+        setFatG(String(meal.fatG));
+        if (meal.weightG) setWeightG(String(meal.weightG));
+        setScore(meal.score);
+        setImageUrl(meal.imageUrl);
+        setIsFavorite(meal.isFavorite);
+      } catch {
+        // error handling
+      } finally {
+        setLoading(false);
+      }
+    }
+    if (id) fetchMeal();
+  }, [id]);
+
+  const handleSave = async () => {
+    if (!name.trim() || !calories) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/meals/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mealType,
+          name: name.trim(),
+          calories: Number(calories),
+          carbsG: Number(carbsG) || 0,
+          proteinG: Number(proteinG) || 0,
+          fatG: Number(fatG) || 0,
+          weightG: weightG ? Number(weightG) : null,
+          isFavorite,
+        }),
+      });
+      if (res.ok) router.push("/dashboard");
+    } catch {
+      // error handling
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/meals/${id}`, { method: "DELETE" });
+      if (res.ok) router.push("/dashboard");
+    } catch {
+      // error handling
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const toggleFavorite = () => setIsFavorite((prev) => !prev);
+
+  if (loading) {
+    return (
+      <div className="px-4 py-6 space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="size-8 rounded-lg bg-muted animate-pulse" />
+          <div className="h-6 w-40 rounded bg-muted animate-pulse" />
+        </div>
+        <div className="h-48 rounded-xl bg-muted animate-pulse" />
+        <div className="space-y-3">
+          <div className="h-11 rounded-lg bg-muted animate-pulse" />
+          <div className="h-10 rounded-lg bg-muted animate-pulse" />
+          <div className="h-10 rounded-lg bg-muted animate-pulse" />
+          <div className="h-10 rounded-lg bg-muted animate-pulse" />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="px-4 py-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link href="/dashboard">
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="size-5" />
+            </Button>
+          </Link>
+          <h1 className="text-xl font-bold">Détail du repas</h1>
+        </div>
+        <button
+          type="button"
+          onClick={toggleFavorite}
+          className="p-2 rounded-lg transition-colors hover:bg-muted"
+        >
+          <Heart
+            className={cn("size-5", isFavorite && "fill-current")}
+            style={{ color: "#E8384F" }}
+          />
+        </button>
+      </div>
+
+      {/* Meal image */}
+      {imageUrl && (
+        <img
+          src={imageUrl}
+          alt={name}
+          className="w-full rounded-xl max-h-56 object-cover"
+        />
+      )}
+
+      {/* Meal name */}
+      <div className="space-y-2">
+        <Label htmlFor="meal-name">Nom du repas</Label>
+        <Input
+          id="meal-name"
+          placeholder="Nom du repas"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="h-11"
+        />
+      </div>
+
+      {/* Meal type */}
+      <div className="space-y-2">
+        <Label>Type de repas</Label>
+        <div className="grid grid-cols-4 gap-2">
+          {MEAL_TYPES.map((type) => (
+            <button
+              key={type.value}
+              type="button"
+              onClick={() => setMealType(type.value)}
+              className={cn(
+                "h-10 rounded-lg text-xs font-medium transition-all border",
+                mealType === type.value
+                  ? "text-white border-transparent"
+                  : "bg-background border-border text-muted-foreground hover:text-foreground"
+              )}
+              style={
+                mealType === type.value
+                  ? { backgroundColor: "#E8384F" }
+                  : undefined
+              }
+            >
+              {type.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Calories */}
+      <div className="space-y-2">
+        <Label htmlFor="calories">Calories</Label>
+        <div className="flex items-center gap-3 rounded-xl bg-muted/30 px-4 py-3">
+          <Flame className="size-5" style={{ color: "#E8384F" }} />
+          <input
+            id="calories"
+            type="number"
+            placeholder="0"
+            value={calories}
+            onChange={(e) => setCalories(e.target.value)}
+            className="flex-1 text-2xl font-bold bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
+          <span className="text-sm text-muted-foreground">kcal</span>
+        </div>
+      </div>
+
+      {/* Macros */}
+      <div className="space-y-3">
+        <Label>Macronutriments</Label>
+        {[
+          { label: "Glucides", color: "#3B82F6", value: carbsG, setter: setCarbsG },
+          { label: "Protéines", color: "#EF4444", value: proteinG, setter: setProteinG },
+          { label: "Lipides", color: "#F59E0B", value: fatG, setter: setFatG },
+        ].map((macro) => (
+          <div
+            key={macro.label}
+            className="flex items-center gap-3 rounded-lg border border-border px-3 py-2.5"
+          >
+            <span
+              className="size-2.5 rounded-full shrink-0"
+              style={{ backgroundColor: macro.color }}
+            />
+            <span className="text-sm font-medium flex-1">{macro.label}</span>
+            <input
+              type="number"
+              placeholder="0"
+              value={macro.value}
+              onChange={(e) => macro.setter(e.target.value)}
+              className="w-16 text-right text-sm font-semibold bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+            <span className="text-xs text-muted-foreground">g</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Weight */}
+      <div className="space-y-2">
+        <Label htmlFor="weight">Poids (optionnel)</Label>
+        <div className="flex items-center gap-2">
+          <Input
+            id="weight"
+            type="number"
+            placeholder="0"
+            value={weightG}
+            onChange={(e) => setWeightG(e.target.value)}
+            className="h-11"
+          />
+          <span className="text-sm text-muted-foreground shrink-0">g</span>
+        </div>
+      </div>
+
+      {/* Score badge */}
+      {score !== null && (
+        <div className="flex justify-center py-2">
+          <ScoreBadge score={score} size="lg" />
+        </div>
+      )}
+
+      {/* Action buttons */}
+      <div className="space-y-3 pt-2">
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving || !name.trim() || !calories}
+          className={cn(
+            "w-full h-12 rounded-xl font-semibold text-base text-white flex items-center justify-center gap-2 transition-opacity active:translate-y-px disabled:opacity-50 disabled:pointer-events-none"
+          )}
+          style={{ backgroundColor: "#E8384F" }}
+        >
+          {saving ? (
+            <>
+              <Loader2 className="size-4 animate-spin" />
+              Enregistrement...
+            </>
+          ) : (
+            "Enregistrer"
+          )}
+        </button>
+
+        <Button
+          variant="destructive"
+          size="lg"
+          className="w-full h-12 gap-2"
+          onClick={handleDelete}
+          disabled={deleting}
+        >
+          {deleting ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <Trash2 className="size-4" />
+          )}
+          Supprimer
+        </Button>
+      </div>
+    </div>
+  );
+}
