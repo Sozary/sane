@@ -15,6 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { calculateTDEE } from "@/lib/calories/bmr";
 import type { UserProfile, Gender } from "@/types";
 
 const MACROS = [
@@ -69,6 +70,17 @@ export default function ProfilePage() {
     }
     fetchProfile();
   }, []);
+
+  // Recalculate TDEE when physical data changes
+  const recalculateTDEE = () => {
+    const w = Number(weightKg);
+    const h = Number(heightCm);
+    const a = Number(age);
+    if (w > 0 && h > 0 && a > 0 && gender) {
+      const tdee = calculateTDEE(w, h, a, gender);
+      setCalorieGoal(tdee);
+    }
+  };
 
   const totalPct = carbsPct + proteinPct + fatPct;
 
@@ -154,7 +166,7 @@ export default function ProfilePage() {
         <CardHeader>
           <CardTitle>Objectif calorique</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
           <div className="flex items-center justify-between rounded-xl bg-muted/30 px-4 py-3">
             <span className="text-sm font-medium text-muted-foreground">
               Calories quotidiennes
@@ -169,6 +181,13 @@ export default function ProfilePage() {
               <span className="text-sm text-muted-foreground">kcal</span>
             </div>
           </div>
+          <button
+            type="button"
+            onClick={recalculateTDEE}
+            className="w-full text-sm font-medium py-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
+          >
+            Recalculer depuis mon profil
+          </button>
         </CardContent>
       </Card>
 
