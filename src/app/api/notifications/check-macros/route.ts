@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
         await wp.sendNotification(
           pushSubscription,
           JSON.stringify({
-            title: "Tu n'as pas fini tes macros !",
+            title: "Tout est enregistré ?",
             body,
             url: "/dashboard",
           })
