@@ -54,6 +54,18 @@ export const activities = pgTable("activities", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Push subscriptions table (Web Push notifications)
+export const pushSubscriptions = pgTable("push_subscriptions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  endpoint: varchar("endpoint", { length: 2000 }).notNull(),
+  keyP256dh: varchar("key_p256dh", { length: 500 }).notNull(),
+  keyAuth: varchar("key_auth", { length: 500 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("push_subscriptions_endpoint_idx").on(table.endpoint),
+]);
+
 // Daily logs table
 export const dailyLogs = pgTable("daily_logs", {
   id: uuid("id").defaultRandom().primaryKey(),

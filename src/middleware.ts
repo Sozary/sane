@@ -9,7 +9,8 @@ export default auth((req) => {
   // Allow public routes and API auth routes
   if (
     publicRoutes.some((r) => pathname.startsWith(r)) ||
-    pathname.startsWith("/api/auth")
+    pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/api/notifications/check-macros")
   ) {
     return NextResponse.next();
   }
