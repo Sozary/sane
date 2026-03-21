@@ -62,7 +62,7 @@ function NewActivityForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          date: dateParam || new Date().toISOString().split("T")[0],
+          date: dateParam || (() => { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`; })(),
           activityType,
           durationMinutes: duration,
           caloriesBurned: calories,

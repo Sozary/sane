@@ -24,7 +24,10 @@ interface DashboardData {
 }
 
 function formatDate(date: Date): string {
-  return date.toISOString().split("T")[0];
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 function DashboardContent() {
@@ -73,34 +76,9 @@ function DashboardContent() {
     fetchData();
   }, [date]);
 
-  if (loading || !data) {
-    return (
-      <div className="px-4 py-6 space-y-6">
-        <DateNavigator date={date} onDateChange={handleDateChange} />
-        {/* Calorie ring skeleton */}
-        <div className="flex flex-col items-center gap-3">
-          <div className="size-[200px] rounded-full bg-muted animate-pulse" />
-          <div className="flex items-center gap-6">
-            <div className="h-4 w-24 rounded bg-muted animate-pulse" />
-            <div className="h-4 w-24 rounded bg-muted animate-pulse" />
-          </div>
-        </div>
-        {/* Macro bars skeleton */}
-        <div className="space-y-3">
-          <div className="h-10 rounded-lg bg-muted animate-pulse" />
-          <div className="h-10 rounded-lg bg-muted animate-pulse" />
-          <div className="h-10 rounded-lg bg-muted animate-pulse" />
-        </div>
-        {/* Meals skeleton */}
-        <div className="space-y-3">
-          <div className="h-5 w-28 rounded bg-muted animate-pulse" />
-          <div className="h-16 rounded-xl bg-muted animate-pulse" />
-        </div>
-      </div>
-    );
-  }
-
-  const remaining = Math.max(0, data.calorieGoal - data.caloriesConsumed + data.caloriesBurned);
+  // Use previous data while loading to keep animations visible
+  const displayData = data ?? { caloriesConsumed: 0, caloriesBurned: 0, calorieGoal: 2000, carbsG: 0, proteinG: 0, fatG: 0, macroGoals: { carbsG: 0, proteinG: 0, fatG: 0 }, meals: [], activities: [] };
+  const remaining = Math.max(0, displayData.calorieGoal - displayData.caloriesConsumed + displayData.caloriesBurned);
 
   return (
     <div className="px-4 py-6 space-y-6">
@@ -109,38 +87,60 @@ function DashboardContent() {
 
       {/* Calorie Ring */}
       <div className="flex flex-col items-center gap-3">
-        <CalorieRing value={data.caloriesConsumed} max={data.calorieGoal} size={200} strokeWidth={10}>
-          <span className="text-4xl font-bold tabular-nums">{remaining.toLocaleString("fr-FR")}</span>
-          <span className="text-xs text-muted-foreground">kcal restantes</span>
+        <CalorieRing value={displayData.caloriesConsumed} max={displayData.calorieGoal} size={200} strokeWidth={10}>
+          {loading ? (
+            <>
+              <div className="h-9 w-20 rounded bg-muted animate-pulse" />
+              <div className="h-3 w-16 rounded bg-muted animate-pulse mt-1" />
+            </>
+          ) : (
+            <>
+              <span className="text-4xl font-bold tabular-nums">{remaining.toLocaleString("fr-FR")}</span>
+              <span className="text-xs text-muted-foreground">kcal restantes</span>
+            </>
+          )}
         </CalorieRing>
 
         <div className="flex items-center gap-6 text-sm">
-          <div className="flex items-center gap-1.5">
-            <Flame className="size-4" style={{ color: "#E8384F" }} />
-            <span className="tabular-nums">{Math.round(data.caloriesConsumed)}</span>
-            <span className="text-muted-foreground">Mangées</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Flame className="size-4 text-orange-500" />
-            <span className="tabular-nums">{Math.round(data.caloriesBurned)}</span>
-            <span className="text-muted-foreground">Brûlées</span>
-          </div>
+          {loading ? (
+            <>
+              <div className="h-4 w-24 rounded bg-muted animate-pulse" />
+              <div className="h-4 w-24 rounded bg-muted animate-pulse" />
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-1.5">
+                <Flame className="size-4" style={{ color: "#E8384F" }} />
+                <span className="tabular-nums">{Math.round(displayData.caloriesConsumed)}</span>
+                <span className="text-muted-foreground">Mangées</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Flame className="size-4 text-orange-500" />
+                <span className="tabular-nums">{Math.round(displayData.caloriesBurned)}</span>
+                <span className="text-muted-foreground">Brûlées</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
-      {/* Macro Bars */}
+      {/* Macro Bars - always rendered so animations play on day change */}
       <div className="space-y-3">
-        <MacroBar label="Glucides" current={data.carbsG} goal={data.macroGoals.carbsG} color="#3B82F6" />
-        <MacroBar label="Protéines" current={data.proteinG} goal={data.macroGoals.proteinG} color="#EF4444" />
-        <MacroBar label="Lipides" current={data.fatG} goal={data.macroGoals.fatG} color="#F59E0B" />
+        <MacroBar label="Glucides" current={displayData.carbsG} goal={displayData.macroGoals.carbsG} color="#3B82F6" />
+        <MacroBar label="Protéines" current={displayData.proteinG} goal={displayData.macroGoals.proteinG} color="#EF4444" />
+        <MacroBar label="Lipides" current={displayData.fatG} goal={displayData.macroGoals.fatG} color="#F59E0B" />
       </div>
 
       {/* Nourriture */}
       <div className="space-y-3">
         <h2 className="font-semibold text-lg">Nourriture</h2>
-        {data.meals.length > 0 ? (
+        {loading ? (
           <div className="space-y-2">
-            {data.meals.map((meal) => (
+            <div className="h-16 rounded-xl bg-muted animate-pulse" />
+          </div>
+        ) : displayData.meals.length > 0 ? (
+          <div className="space-y-2">
+            {displayData.meals.map((meal) => (
               <MealCard
                 key={meal.id}
                 id={meal.id}
@@ -169,9 +169,13 @@ function DashboardContent() {
       {/* Activités */}
       <div className="space-y-3">
         <h2 className="font-semibold text-lg">Activités</h2>
-        {data.activities.length > 0 ? (
+        {loading ? (
           <div className="space-y-2">
-            {data.activities.map((activity) => (
+            <div className="h-16 rounded-xl bg-muted animate-pulse" />
+          </div>
+        ) : displayData.activities.length > 0 ? (
+          <div className="space-y-2">
+            {displayData.activities.map((activity) => (
               <ActivityCard
                 key={activity.id}
                 id={activity.id}
