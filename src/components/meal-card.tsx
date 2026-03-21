@@ -10,6 +10,7 @@ interface MealCardProps {
   calories: number;
   mealType: string;
   imageUrl?: string | null;
+  date?: string;
   className?: string;
 }
 
@@ -20,10 +21,11 @@ const mealTypeLabels: Record<string, string> = {
   snack: "Collation",
 };
 
-export function MealCard({ id, name, calories, mealType, imageUrl, className }: MealCardProps) {
+export function MealCard({ id, name, calories, mealType, imageUrl, date, className }: MealCardProps) {
+  const href = date ? `/meals/${id}?date=${date}` : `/meals/${id}`;
   return (
     <Link
-      href={`/meals/${id}`}
+      href={href}
       className={cn(
         "flex items-center gap-3 rounded-xl bg-card p-3 transition-colors hover:bg-muted/50",
         className

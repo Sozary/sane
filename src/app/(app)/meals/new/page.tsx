@@ -29,6 +29,8 @@ function getDefaultMealType(): MealType {
 function NewMealForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const dateParam = searchParams.get("date");
+  const dashboardUrl = dateParam ? `/dashboard?date=${dateParam}` : "/dashboard";
 
   const [name, setName] = useState("");
   const [mealType, setMealType] = useState<MealType>(getDefaultMealType());
@@ -97,7 +99,7 @@ function NewMealForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          date: new Date().toISOString().split("T")[0],
+          date: dateParam || new Date().toISOString().split("T")[0],
           mealType,
           name: name.trim(),
           calories: Number(calories),
@@ -108,7 +110,7 @@ function NewMealForm() {
         }),
       });
       if (res.ok) {
-        router.push("/dashboard");
+        router.push(dashboardUrl);
       }
     } catch {
       // error handling
@@ -121,7 +123,7 @@ function NewMealForm() {
     <div className="px-4 py-6 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Link href="/dashboard">
+        <Link href={dashboardUrl}>
           <Button variant="ghost" size="icon">
             <ArrowLeft className="size-5" />
           </Button>

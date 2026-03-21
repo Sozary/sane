@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { CalorieRing } from "@/components/calorie-ring";
 import { MacroBar } from "@/components/macro-bar";
 import { MealCard } from "@/components/meal-card";
 import { ActivityCard } from "@/components/activity-card";
 import { DateNavigator } from "@/components/date-navigator";
-import { Flame, Plus } from "lucide-react";
+import { Flame, Plus, Loader2 } from "lucide-react";
 import Link from "next/link";
 import type { Meal, Activity } from "@/types";
 
@@ -26,24 +27,37 @@ function formatDate(date: Date): string {
   return date.toISOString().split("T")[0];
 }
 
-export default function DashboardPage() {
-  const [date, setDate] = useState(() => new Date());
-  const [data, setData] = useState<DashboardData>({
-    caloriesConsumed: 0,
-    caloriesBurned: 0,
-    carbsG: 0,
-    proteinG: 0,
-    fatG: 0,
-    calorieGoal: 2000,
-    macroGoals: { carbsG: 200, proteinG: 150, fatG: 67 },
-    meals: [],
-    activities: [],
+function DashboardContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [date, setDate] = useState(() => {
+    const dateParam = searchParams.get("date");
+    if (dateParam) {
+      const parsed = new Date(dateParam + "T00:00:00");
+      if (!isNaN(parsed.getTime())) return parsed;
+    }
+    return new Date();
   });
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const remaining = Math.max(0, data.calorieGoal - data.caloriesConsumed + data.caloriesBurned);
+  const dateStr = formatDate(date);
+
+  const handleDateChange = useCallback((newDate: Date) => {
+    setDate(newDate);
+    setLoading(true);
+    const newDateStr = formatDate(newDate);
+    const today = formatDate(new Date());
+    if (newDateStr === today) {
+      router.replace("/dashboard", { scroll: false });
+    } else {
+      router.replace(`/dashboard?date=${newDateStr}`, { scroll: false });
+    }
+  }, [router]);
 
   useEffect(() => {
     async function fetchData() {
+      setLoading(true);
       try {
         const res = await fetch(`/api/daily-log?date=${formatDate(date)}`);
         if (res.ok) {
@@ -52,15 +66,46 @@ export default function DashboardPage() {
         }
       } catch {
         // Keep empty state
+      } finally {
+        setLoading(false);
       }
     }
     fetchData();
   }, [date]);
 
+  if (loading || !data) {
+    return (
+      <div className="px-4 py-6 space-y-6">
+        <DateNavigator date={date} onDateChange={handleDateChange} />
+        {/* Calorie ring skeleton */}
+        <div className="flex flex-col items-center gap-3">
+          <div className="size-[200px] rounded-full bg-muted animate-pulse" />
+          <div className="flex items-center gap-6">
+            <div className="h-4 w-24 rounded bg-muted animate-pulse" />
+            <div className="h-4 w-24 rounded bg-muted animate-pulse" />
+          </div>
+        </div>
+        {/* Macro bars skeleton */}
+        <div className="space-y-3">
+          <div className="h-10 rounded-lg bg-muted animate-pulse" />
+          <div className="h-10 rounded-lg bg-muted animate-pulse" />
+          <div className="h-10 rounded-lg bg-muted animate-pulse" />
+        </div>
+        {/* Meals skeleton */}
+        <div className="space-y-3">
+          <div className="h-5 w-28 rounded bg-muted animate-pulse" />
+          <div className="h-16 rounded-xl bg-muted animate-pulse" />
+        </div>
+      </div>
+    );
+  }
+
+  const remaining = Math.max(0, data.calorieGoal - data.caloriesConsumed + data.caloriesBurned);
+
   return (
     <div className="px-4 py-6 space-y-6">
       {/* Date Navigator */}
-      <DateNavigator date={date} onDateChange={setDate} />
+      <DateNavigator date={date} onDateChange={handleDateChange} />
 
       {/* Calorie Ring */}
       <div className="flex flex-col items-center gap-3">
@@ -103,6 +148,7 @@ export default function DashboardPage() {
                 calories={meal.calories}
                 mealType={meal.mealType}
                 imageUrl={meal.imageUrl}
+                date={dateStr}
               />
             ))}
           </div>
@@ -112,7 +158,7 @@ export default function DashboardPage() {
           </p>
         )}
         <Link
-          href="/scan"
+          href={`/scan?date=${dateStr}`}
           className="flex items-center justify-center gap-2 w-full h-12 rounded-xl border-2 border-dashed border-border text-muted-foreground hover:border-foreground hover:text-foreground transition-colors"
         >
           <Plus className="size-5" />
@@ -132,6 +178,7 @@ export default function DashboardPage() {
                 activityType={activity.activityType}
                 durationMinutes={activity.durationMinutes}
                 caloriesBurned={activity.caloriesBurned}
+                date={dateStr}
               />
             ))}
           </div>
@@ -141,7 +188,7 @@ export default function DashboardPage() {
           </p>
         )}
         <Link
-          href="/activities/new"
+          href={`/activities/new?date=${dateStr}`}
           className="flex items-center justify-center gap-2 w-full h-12 rounded-xl border-2 border-dashed border-border text-muted-foreground hover:border-foreground hover:text-foreground transition-colors"
         >
           <Plus className="size-5" />
@@ -149,5 +196,19 @@ export default function DashboardPage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <Loader2 className="size-6 animate-spin text-muted-foreground" />
+        </div>
+      }
+    >
+      <DashboardContent />
+    </Suspense>
   );
 }

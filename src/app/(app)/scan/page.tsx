@@ -1,14 +1,18 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useRef, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Camera, Upload, Loader2, ArrowLeft, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
-export default function ScanPage() {
+function ScanForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const dateParam = searchParams.get("date");
+  const dashboardUrl = dateParam ? `/dashboard?date=${dateParam}` : "/dashboard";
+  const dateQuery = dateParam ? `&date=${dateParam}` : "";
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -50,7 +54,7 @@ export default function ScanPage() {
       if (!res.ok) throw new Error("Analysis failed");
       const analysis = await res.json();
       router.push(
-        `/meals/new?analysis=${encodeURIComponent(JSON.stringify(analysis))}`
+        `/meals/new?analysis=${encodeURIComponent(JSON.stringify(analysis))}${dateQuery}`
       );
     } catch {
       setError("L'analyse a échoué. Veuillez réessayer.");
@@ -63,7 +67,7 @@ export default function ScanPage() {
     <div className="px-4 py-6 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Link href="/dashboard">
+        <Link href={dashboardUrl}>
           <Button variant="ghost" size="icon">
             <ArrowLeft className="size-5" />
           </Button>
@@ -111,7 +115,7 @@ export default function ScanPage() {
           {/* Manual entry link */}
           <div className="text-center">
             <Link
-              href="/meals/new"
+              href={dateParam ? `/meals/new?date=${dateParam}` : "/meals/new"}
               className="text-sm font-medium underline-offset-4 hover:underline"
               style={{ color: "#E8384F" }}
             >
@@ -160,7 +164,7 @@ export default function ScanPage() {
                     Reprendre une photo
                   </button>
                   <Link
-                    href="/meals/new"
+                    href={dateParam ? `/meals/new?date=${dateParam}` : "/meals/new"}
                     className="w-full h-11 rounded-xl font-medium text-sm border border-border flex items-center justify-center gap-2 hover:bg-muted transition-colors"
                   >
                     Entrer manuellement
@@ -198,5 +202,19 @@ export default function ScanPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function ScanPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <Loader2 className="size-6 animate-spin text-muted-foreground" />
+        </div>
+      }
+    >
+      <ScanForm />
+    </Suspense>
   );
 }

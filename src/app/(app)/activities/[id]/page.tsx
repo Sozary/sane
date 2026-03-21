@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { ArrowLeft, Flame, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,9 +11,12 @@ import Link from "next/link";
 import { ACTIVITY_TYPES } from "@/lib/calories/met";
 import type { Activity } from "@/types";
 
-export default function ActivityDetailPage() {
+function ActivityDetailForm() {
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
+  const dateParam = searchParams.get("date");
+  const dashboardUrl = dateParam ? `/dashboard?date=${dateParam}` : "/dashboard";
 
   const [loading, setLoading] = useState(true);
   const [activityType, setActivityType] = useState("");
@@ -56,7 +59,7 @@ export default function ActivityDetailPage() {
           caloriesBurned: calories,
         }),
       });
-      if (res.ok) router.push("/dashboard");
+      if (res.ok) router.push(dashboardUrl);
     } catch {
       // error handling
     } finally {
@@ -68,7 +71,7 @@ export default function ActivityDetailPage() {
     setDeleting(true);
     try {
       const res = await fetch(`/api/activities/${id}`, { method: "DELETE" });
-      if (res.ok) router.push("/dashboard");
+      if (res.ok) router.push(dashboardUrl);
     } catch {
       // error handling
     } finally {
@@ -88,7 +91,7 @@ export default function ActivityDetailPage() {
     <div className="px-4 py-6 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Link href="/dashboard">
+        <Link href={dashboardUrl}>
           <Button variant="ghost" size="icon">
             <ArrowLeft className="size-5" />
           </Button>
@@ -190,5 +193,19 @@ export default function ActivityDetailPage() {
         </Button>
       </div>
     </div>
+  );
+}
+
+export default function ActivityDetailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <Loader2 className="size-6 animate-spin text-muted-foreground" />
+        </div>
+      }
+    >
+      <ActivityDetailForm />
+    </Suspense>
   );
 }

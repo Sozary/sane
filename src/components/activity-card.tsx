@@ -9,6 +9,7 @@ interface ActivityCardProps {
   activityType: string;
   durationMinutes: number;
   caloriesBurned: number;
+  date?: string;
   className?: string;
 }
 
@@ -21,10 +22,11 @@ const activityLabels: Record<string, string> = {
   yoga: "Yoga",
 };
 
-export function ActivityCard({ id, activityType, durationMinutes, caloriesBurned, className }: ActivityCardProps) {
+export function ActivityCard({ id, activityType, durationMinutes, caloriesBurned, date, className }: ActivityCardProps) {
+  const href = date ? `/activities/${id}?date=${date}` : `/activities/${id}`;
   return (
     <Link
-      href={`/activities/${id}`}
+      href={href}
       className={cn(
         "flex items-center gap-3 rounded-xl bg-card p-3 transition-colors hover:bg-muted/50",
         className

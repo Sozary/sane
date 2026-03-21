@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Flame, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,8 +10,11 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { ACTIVITY_TYPES, estimateCaloriesBurned } from "@/lib/calories/met";
 
-export default function NewActivityPage() {
+function NewActivityForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const dateParam = searchParams.get("date");
+  const dashboardUrl = dateParam ? `/dashboard?date=${dateParam}` : "/dashboard";
 
   const [activityType, setActivityType] = useState<string>(ACTIVITY_TYPES[0].key);
   const [durationMinutes, setDurationMinutes] = useState("");
@@ -59,14 +62,14 @@ export default function NewActivityPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          date: new Date().toISOString().split("T")[0],
+          date: dateParam || new Date().toISOString().split("T")[0],
           activityType,
           durationMinutes: duration,
           caloriesBurned: calories,
         }),
       });
       if (res.ok) {
-        router.push("/dashboard");
+        router.push(dashboardUrl);
       }
     } catch {
       // error handling
@@ -79,7 +82,7 @@ export default function NewActivityPage() {
     <div className="px-4 py-6 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Link href="/dashboard">
+        <Link href={dashboardUrl}>
           <Button variant="ghost" size="icon">
             <ArrowLeft className="size-5" />
           </Button>
@@ -173,5 +176,19 @@ export default function NewActivityPage() {
         )}
       </button>
     </div>
+  );
+}
+
+export default function NewActivityPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <Loader2 className="size-6 animate-spin text-muted-foreground" />
+        </div>
+      }
+    >
+      <NewActivityForm />
+    </Suspense>
   );
 }

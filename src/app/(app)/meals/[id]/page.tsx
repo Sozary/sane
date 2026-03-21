@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { ArrowLeft, Flame, Heart, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,9 +18,12 @@ const MEAL_TYPES: { value: MealType; label: string }[] = [
   { value: "snack", label: "Collation" },
 ];
 
-export default function MealDetailPage() {
+function MealDetailForm() {
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
+  const dateParam = searchParams.get("date");
+  const dashboardUrl = dateParam ? `/dashboard?date=${dateParam}` : "/dashboard";
 
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
@@ -76,7 +79,7 @@ export default function MealDetailPage() {
           isFavorite,
         }),
       });
-      if (res.ok) router.push("/dashboard");
+      if (res.ok) router.push(dashboardUrl);
     } catch {
       // error handling
     } finally {
@@ -88,7 +91,7 @@ export default function MealDetailPage() {
     setDeleting(true);
     try {
       const res = await fetch(`/api/meals/${id}`, { method: "DELETE" });
-      if (res.ok) router.push("/dashboard");
+      if (res.ok) router.push(dashboardUrl);
     } catch {
       // error handling
     } finally {
@@ -121,7 +124,7 @@ export default function MealDetailPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/dashboard">
+          <Link href={dashboardUrl}>
             <Button variant="ghost" size="icon">
               <ArrowLeft className="size-5" />
             </Button>
@@ -278,5 +281,23 @@ export default function MealDetailPage() {
         </Button>
       </div>
     </div>
+  );
+}
+
+export default function MealDetailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="px-4 py-6 space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="size-8 rounded-lg bg-muted animate-pulse" />
+            <div className="h-6 w-40 rounded bg-muted animate-pulse" />
+          </div>
+          <div className="h-48 rounded-xl bg-muted animate-pulse" />
+        </div>
+      }
+    >
+      <MealDetailForm />
+    </Suspense>
   );
 }
