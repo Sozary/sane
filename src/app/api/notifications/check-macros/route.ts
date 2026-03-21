@@ -7,7 +7,7 @@ import webpush from "web-push";
 function getWebPush() {
   webpush.setVapidDetails(
     "mailto:contact@sane.app",
-    process.env.VAPID_PUBLIC_KEY!,
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
     process.env.VAPID_PRIVATE_KEY!
   );
   return webpush;
