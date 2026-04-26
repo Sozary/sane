@@ -69,7 +69,8 @@ export function DateNavigator({ date, onDateChange, className, dayDots }: DateNa
 
   useEffect(() => {
     const selectedWeek = startOfWeekMonday(date);
-    if (selectedWeek.getTime() !== weekAnchor.getTime()) {
+    const isWithinVisibleDays = days.some((d) => isSameDay(d, date));
+    if (!isWithinVisibleDays && selectedWeek.getTime() !== weekAnchor.getTime()) {
       setDirection(selectedWeek.getTime() > weekAnchor.getTime() ? 1 : -1);
       setWeekAnchor(selectedWeek);
     }
@@ -115,7 +116,7 @@ export function DateNavigator({ date, onDateChange, className, dayDots }: DateNa
   };
 
   return (
-    <div className={cn("space-y-2 select-none", className)}>
+    <div data-swipe-ignore="true" className={cn("space-y-2 select-none", className)}>
       <div
         className="flex items-stretch gap-1"
         onPointerDown={onPointerDown}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense, useMemo } from "react";
+import { useState, useEffect, useCallback, Suspense, useMemo, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SummaryCard } from "@/components/summary-card";
 import { MealGroupCard } from "@/components/meal-group-card";
@@ -70,6 +70,8 @@ function DashboardContent() {
   const [monthDays, setMonthDays] = useState<Record<string, MonthDayAggregate>>({});
   const [fetchedMonths, setFetchedMonths] = useState<Set<string>>(new Set());
   const [contentDirection, setContentDirection] = useState<1 | -1>(1);
+  const swipeStartRef = useRef<{ x: number; y: number } | null>(null);
+  const swipeTriggeredRef = useRef(false);
 
   const dateStr = formatDate(date);
 
@@ -87,6 +89,19 @@ function DashboardContent() {
       }
     },
     [date, router],
+  );
+
+  const handleSwipeDateChange = useCallback(
+    (deltaDays: number) => {
+      const nextDate = new Date(date);
+      nextDate.setDate(nextDate.getDate() + deltaDays);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      nextDate.setHours(0, 0, 0, 0);
+      if (nextDate.getTime() > today.getTime()) return;
+      handleDateChange(nextDate);
+    },
+    [date, handleDateChange],
   );
 
   useEffect(() => {
@@ -207,7 +222,35 @@ function DashboardContent() {
   }, [displayData.meals]);
 
   return (
-    <div className="px-4 pt-6 pb-40 space-y-5">
+    <div
+      className="px-4 pt-6 pb-40 space-y-5"
+      onPointerDown={(e) => {
+        if (!window.matchMedia("(hover: none)").matches) return;
+        const target = e.target as HTMLElement;
+        if (target.closest("[data-swipe-ignore='true']")) return;
+        swipeStartRef.current = { x: e.clientX, y: e.clientY };
+        swipeTriggeredRef.current = false;
+      }}
+      onPointerMove={(e) => {
+        if (!swipeStartRef.current) return;
+        const dx = e.clientX - swipeStartRef.current.x;
+        const dy = e.clientY - swipeStartRef.current.y;
+        if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) && !swipeTriggeredRef.current) {
+          swipeTriggeredRef.current = true;
+          if (dx < 0) handleSwipeDateChange(1);
+          else handleSwipeDateChange(-1);
+          swipeStartRef.current = null;
+        }
+      }}
+      onPointerUp={() => {
+        swipeStartRef.current = null;
+        swipeTriggeredRef.current = false;
+      }}
+      onPointerCancel={() => {
+        swipeStartRef.current = null;
+        swipeTriggeredRef.current = false;
+      }}
+    >
       <div className="animate-in fade-in slide-in-from-top-2 duration-500">
         <DateNavigator date={date} onDateChange={handleDateChange} dayDots={dayDots} />
       </div>
@@ -235,6 +278,7 @@ function DashboardContent() {
         <div className="space-y-3">
           <h2 className="font-bold text-lg">Repas</h2>
           <div
+            data-swipe-ignore="true"
             className="overflow-x-auto no-scrollbar snap-x snap-mandatory pb-1"
             style={{ scrollPaddingLeft: 0, scrollPaddingRight: "1rem" }}
           >
