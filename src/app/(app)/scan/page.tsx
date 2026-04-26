@@ -99,7 +99,7 @@ function ScanForm() {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="w-full aspect-[4/3] rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-4 transition-colors hover:border-foreground/40 hover:bg-muted/20 active:bg-muted/30"
+              className="w-full aspect-[4/3] rounded-3xl bg-card shadow-sm border-2 border-dashed border-border/80 flex flex-col items-center justify-center gap-4 transition-colors hover:border-foreground/30 hover:bg-muted/10 active:bg-muted/20"
             >
               <div
                 className="size-16 rounded-full flex items-center justify-center"
@@ -150,13 +150,13 @@ function ScanForm() {
               <img
                 src={previewUrl}
                 alt="Aperçu du repas"
-                className="w-full rounded-xl max-h-80 object-cover"
+                className="w-full rounded-3xl max-h-80 object-cover shadow-sm"
               />
             )}
 
             {/* Analyzing overlay */}
             {analyzing && (
-              <div className="absolute inset-0 rounded-xl bg-black/50 flex flex-col items-center justify-center gap-3 animate-in fade-in duration-200">
+              <div className="absolute inset-0 rounded-3xl bg-black/50 flex flex-col items-center justify-center gap-3 animate-in fade-in duration-200">
                 <Loader2 className="size-10 text-white animate-spin" />
                 <p className="text-sm font-medium text-white">
                   Analyse en cours...
@@ -168,7 +168,7 @@ function ScanForm() {
           {/* Not recognized modal */}
           {error && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 animate-in fade-in duration-200">
-              <div className="bg-background rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-xl animate-in zoom-in-95 slide-in-from-bottom-2 duration-300">
+              <div className="bg-card rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-sm animate-in zoom-in-95 slide-in-from-bottom-2 duration-300">
                 <h3 className="text-lg font-bold text-center">Repas non reconnu</h3>
                 <div className="flex flex-col gap-3">
                   <button

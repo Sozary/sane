@@ -10,7 +10,7 @@ import {
   PeriodAnalysisResult,
   type PeriodAnalysisData,
 } from "@/components/period-analysis-result";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type Preset = "7d" | "30d" | "month" | "custom";
 
@@ -183,96 +183,99 @@ export default function AnalysePage() {
 
   return (
     <div className="px-4 py-6 pb-28 space-y-6">
-      {/* Month navigator */}
-      <div className="flex items-center justify-between">
-        <button
-          onClick={prevMonth}
-          className="cursor-pointer p-2 rounded-full hover:bg-muted/50 transition-colors"
-          style={{ cursor: "pointer" }}
-          aria-label="Mois précédent"
-        >
-          <ChevronLeft className="size-5" />
-        </button>
-        <span className="text-base font-semibold capitalize">
-          {formatMonthFr(monthCursor)}
-        </span>
-        <button
-          onClick={nextMonth}
-          className="cursor-pointer p-2 rounded-full hover:bg-muted/50 transition-colors"
-          style={{ cursor: "pointer" }}
-          aria-label="Mois suivant"
-        >
-          <ChevronRight className="size-5" />
-        </button>
-      </div>
-
-      {/* Preset chips */}
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-        {(
-          [
-            { id: "7d" as Preset, label: "7 derniers jours" },
-            { id: "30d" as Preset, label: "30 derniers jours" },
-            { id: "month" as Preset, label: "Ce mois" },
-            { id: "custom" as Preset, label: "Personnalisée" },
-          ]
-        ).map((p) => {
-          const active = preset === p.id;
-          return (
+      <Card className="animate-in fade-in slide-in-from-bottom-3 duration-500">
+        <CardHeader className="pb-1">
+          <CardTitle>Analyse</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="flex items-center justify-between">
             <button
-              key={p.id}
-              onClick={() => {
-                setPreset(p.id);
-                if (p.id === "custom") {
-                  setRangeStart(null);
-                  setRangeEnd(null);
-                }
-              }}
-              className={cn(
-                "shrink-0 px-3 h-8 rounded-full text-xs font-medium border transition-colors cursor-pointer",
-                active
-                  ? "text-white border-transparent"
-                  : "bg-background text-foreground border-border hover:bg-muted/60"
-              )}
-              style={active ? { backgroundColor: "#A4B465" } : undefined}
+              onClick={prevMonth}
+              className="cursor-pointer p-2 rounded-full bg-muted/30 hover:bg-muted/60 transition-colors"
+              style={{ cursor: "pointer" }}
+              aria-label="Mois précédent"
             >
-              {p.label}
+              <ChevronLeft className="size-5" />
             </button>
-          );
-        })}
-      </div>
+            <span className="text-base font-semibold capitalize">
+              {formatMonthFr(monthCursor)}
+            </span>
+            <button
+              onClick={nextMonth}
+              className="cursor-pointer p-2 rounded-full bg-muted/30 hover:bg-muted/60 transition-colors"
+              style={{ cursor: "pointer" }}
+              aria-label="Mois suivant"
+            >
+              <ChevronRight className="size-5" />
+            </button>
+          </div>
 
-      {/* Calendar */}
-      {!monthReady ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="size-6 animate-spin text-muted-foreground" />
-        </div>
-      ) : (
-        <MonthCalendar
-          monthCursor={monthCursor}
-          data={monthData?.days ?? {}}
-          rangeStart={rangeStart}
-          rangeEnd={rangeEnd}
-          selectedDay={selectedDay}
-          onDayTap={handleDayTap}
-        />
-      )}
+          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+            {(
+              [
+                { id: "7d" as Preset, label: "7 derniers jours" },
+                { id: "30d" as Preset, label: "30 derniers jours" },
+                { id: "month" as Preset, label: "Ce mois" },
+                { id: "custom" as Preset, label: "Personnalisée" },
+              ]
+            ).map((p) => {
+              const active = preset === p.id;
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => {
+                    setPreset(p.id);
+                    if (p.id === "custom") {
+                      setRangeStart(null);
+                      setRangeEnd(null);
+                    }
+                  }}
+                  className={cn(
+                    "shrink-0 px-3.5 h-9 rounded-full text-xs font-medium border transition-colors cursor-pointer",
+                    active
+                      ? "text-white border-transparent"
+                      : "bg-background text-foreground border-border hover:bg-muted/60"
+                  )}
+                  style={active ? { backgroundColor: "#A4B465" } : undefined}
+                >
+                  {p.label}
+                </button>
+              );
+            })}
+          </div>
 
-      {/* Legend */}
-      <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-        <span>Macros dans la cible&nbsp;:</span>
-        <span className="flex items-center gap-1">
-          <span className="size-1.5 rounded-full" style={{ backgroundColor: "#A4B465" }} />
-          Glucides
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="size-1.5 rounded-full" style={{ backgroundColor: "#F5B547" }} />
-          Protéines
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="size-1.5 rounded-full" style={{ backgroundColor: "#1F1F1F" }} />
-          Lipides
-        </span>
-      </div>
+          {!monthReady ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="size-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <MonthCalendar
+              monthCursor={monthCursor}
+              data={monthData?.days ?? {}}
+              rangeStart={rangeStart}
+              rangeEnd={rangeEnd}
+              selectedDay={selectedDay}
+              onDayTap={handleDayTap}
+            />
+          )}
+
+          <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+            <span>Macros dans la cible&nbsp;:</span>
+            <span className="flex items-center gap-1">
+              <span className="size-1.5 rounded-full" style={{ backgroundColor: "#A4B465" }} />
+              Glucides
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="size-1.5 rounded-full" style={{ backgroundColor: "#F5B547" }} />
+              Protéines
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="size-1.5 rounded-full" style={{ backgroundColor: "#1F1F1F" }} />
+              Lipides
+            </span>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Day detail panel */}
       {selectedDay && (
@@ -363,7 +366,8 @@ export default function AnalysePage() {
       )}
 
       {/* Range summary + Analyze button */}
-      <div className="space-y-3">
+      <Card className="animate-in fade-in slide-in-from-bottom-3 duration-500 delay-100 fill-mode-backwards">
+        <CardContent className="space-y-3 pt-1">
         <div className="text-sm text-muted-foreground text-center">
           {rangeStart && rangeEnd ? (
             <>
@@ -409,7 +413,8 @@ export default function AnalysePage() {
               : analysisError}
           </p>
         )}
-      </div>
+        </CardContent>
+      </Card>
 
       {analysis && <PeriodAnalysisResult data={analysis} />}
     </div>

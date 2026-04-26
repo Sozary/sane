@@ -212,57 +212,55 @@ function DashboardContent() {
         <DateNavigator date={date} onDateChange={handleDateChange} dayDots={dayDots} />
       </div>
 
-      <div className="overflow-x-hidden">
-        <div
-          key={dateStr}
-          className={cn(
-            "space-y-5 animate-in fade-in duration-400",
-            contentDirection === 1 ? "slide-in-from-right-16" : "slide-in-from-left-16",
-          )}
-        >
-          <div>
-            <SummaryCard
-              caloriesConsumed={displayData.caloriesConsumed}
-              caloriesBurned={displayData.caloriesBurned}
-              calorieGoal={displayData.calorieGoal}
-              carbsG={displayData.carbsG}
-              proteinG={displayData.proteinG}
-              fatG={displayData.fatG}
-              macroGoals={displayData.macroGoals}
-              loading={loading}
-            />
-          </div>
+      <div
+        key={dateStr}
+        className={cn(
+          "space-y-5 animate-in fade-in duration-400",
+          contentDirection === 1 ? "slide-in-from-right-16" : "slide-in-from-left-16",
+        )}
+      >
+        <div>
+          <SummaryCard
+            caloriesConsumed={displayData.caloriesConsumed}
+            caloriesBurned={displayData.caloriesBurned}
+            calorieGoal={displayData.calorieGoal}
+            carbsG={displayData.carbsG}
+            proteinG={displayData.proteinG}
+            fatG={displayData.fatG}
+            macroGoals={displayData.macroGoals}
+            loading={loading}
+          />
+        </div>
 
-          <div className="space-y-3">
-            <h2 className="font-bold text-lg">Repas</h2>
-            <div
-              className="-mx-4 overflow-x-auto no-scrollbar snap-x snap-mandatory"
-              style={{ scrollPaddingLeft: "1rem", scrollPaddingRight: "1rem" }}
-            >
-              <div className="flex gap-3 px-4 pb-1">
-                {MEAL_TYPES.map((m) => (
-                  <div key={m.type} className="snap-start shrink-0 w-[84%]">
-                    <MealGroupCard
-                      mealType={m.type}
-                      label={m.label}
-                      meals={mealsByType[m.type] ?? []}
-                      goalCalories={Math.round(displayData.calorieGoal * m.ratio)}
-                      date={dateStr}
-                    />
-                  </div>
-                ))}
-              </div>
+        <div className="space-y-3">
+          <h2 className="font-bold text-lg">Repas</h2>
+          <div
+            className="overflow-x-auto no-scrollbar snap-x snap-mandatory pb-1"
+            style={{ scrollPaddingLeft: 0, scrollPaddingRight: "1rem" }}
+          >
+            <div className="flex gap-3 pr-4">
+              {MEAL_TYPES.map((m) => (
+                <div key={m.type} className="snap-start shrink-0 w-[84%]">
+                  <MealGroupCard
+                    mealType={m.type}
+                    label={m.label}
+                    meals={mealsByType[m.type] ?? []}
+                    goalCalories={Math.round(displayData.calorieGoal * m.ratio)}
+                    date={dateStr}
+                  />
+                </div>
+              ))}
             </div>
           </div>
+        </div>
 
-          <div className="space-y-3">
-            <h2 className="font-bold text-lg">Activités</h2>
-            <ActivityGroupCard
-              activities={displayData.activities}
-              goalBurn={0}
-              date={dateStr}
-            />
-          </div>
+        <div className="space-y-3">
+          <h2 className="font-bold text-lg">Activités</h2>
+          <ActivityGroupCard
+            activities={displayData.activities}
+            goalBurn={0}
+            date={dateStr}
+          />
         </div>
       </div>
     </div>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { ArrowLeft, Loader2, LogOut, Save } from "lucide-react";
+import { Loader2, LogOut, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -184,35 +184,29 @@ export default function ProfilePage() {
 
   return (
     <div className="px-4 py-6 pb-28 space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="size-5" />
-        </Button>
-        <h1 className="text-xl font-bold">Profil</h1>
-      </div>
-
       {/* Avatar & identity */}
-      <div className="flex flex-col items-center gap-3 py-4">
-        <div
-          className="size-20 rounded-full flex items-center justify-center text-2xl font-bold text-white"
-          style={{ backgroundColor: "#A4B465" }}
-        >
-          {initials}
-        </div>
-        <div className="text-center">
-          {name && <p className="font-semibold">{name}</p>}
-          <p className="text-sm text-muted-foreground">{email}</p>
-        </div>
-      </div>
+      <Card className="animate-in fade-in slide-in-from-bottom-3 duration-500">
+        <CardContent className="flex flex-col items-center gap-3 py-3">
+          <div
+            className="size-20 rounded-full flex items-center justify-center text-2xl font-bold text-white"
+            style={{ backgroundColor: "#A4B465" }}
+          >
+            {initials}
+          </div>
+          <div className="text-center">
+            {name && <p className="font-semibold">{name}</p>}
+            <p className="text-sm text-muted-foreground">{email}</p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Calorie goal */}
-      <Card>
+      <Card className="animate-in fade-in slide-in-from-bottom-3 duration-500 delay-150 fill-mode-backwards">
         <CardHeader>
           <CardTitle>Objectif calorique</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="flex items-center justify-between rounded-xl bg-muted/30 px-4 py-3">
+          <div className="flex items-center justify-between rounded-2xl bg-muted/30 px-4 py-3.5">
             <span className="text-sm font-medium text-muted-foreground">
               Calories quotidiennes
             </span>
@@ -230,7 +224,7 @@ export default function ProfilePage() {
       </Card>
 
       {/* Macro distribution */}
-      <Card>
+      <Card className="animate-in fade-in slide-in-from-bottom-3 duration-500 delay-200 fill-mode-backwards">
         <CardHeader>
           <CardTitle>Répartition macros</CardTitle>
         </CardHeader>
@@ -269,7 +263,7 @@ export default function ProfilePage() {
       </Card>
 
       {/* Physical profile */}
-      <Card>
+      <Card className="animate-in fade-in slide-in-from-bottom-3 duration-500 delay-250 fill-mode-backwards">
         <CardHeader>
           <CardTitle>Profil</CardTitle>
         </CardHeader>
@@ -354,19 +348,19 @@ export default function ProfilePage() {
       </Card>
 
       {/* Account section */}
-      <Card>
+      <Card className="animate-in fade-in slide-in-from-bottom-3 duration-500 delay-300 fill-mode-backwards">
         <CardHeader>
           <CardTitle>Compte</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between rounded-2xl bg-muted/30 px-4 py-3">
             <span className="text-sm text-muted-foreground">Email</span>
             <span className="text-sm font-medium">{email}</span>
           </div>
           <Button
             variant="destructive"
             size="lg"
-            className="w-full h-10 gap-2"
+            className="w-full h-11 gap-2 rounded-xl"
             onClick={handleLogout}
           >
             <LogOut className="size-4" />
@@ -377,8 +371,8 @@ export default function ProfilePage() {
 
       {/* Recalculate TDEE modal */}
       {showRecalcModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-          <div className="bg-background rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-xl">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 animate-in fade-in duration-200">
+          <div className="bg-card rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-sm animate-in zoom-in-95 slide-in-from-bottom-2 duration-300">
             <h3 className="text-lg font-bold">Recalculer l&apos;objectif ?</h3>
             <p className="text-sm text-muted-foreground">
               Votre profil physique a changé. Voulez-vous recalculer votre objectif calorique ?
