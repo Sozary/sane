@@ -6,13 +6,21 @@ import { Camera, Upload, Loader2, ArrowLeft, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import type { MealType } from "@/types";
+
+function isMealType(value: string | null): value is MealType {
+  return value === "breakfast" || value === "lunch" || value === "dinner" || value === "snack";
+}
 
 function ScanForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const dateParam = searchParams.get("date");
+  const typeParam = searchParams.get("type");
+  const mealTypeParam = isMealType(typeParam) ? typeParam : null;
   const dashboardUrl = dateParam ? `/dashboard?date=${dateParam}` : "/dashboard";
   const dateQuery = dateParam ? `&date=${dateParam}` : "";
+  const typeQuery = mealTypeParam ? `&type=${mealTypeParam}` : "";
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -54,7 +62,7 @@ function ScanForm() {
       if (!res.ok) throw new Error("Analysis failed");
       const analysis = await res.json();
       router.push(
-        `/meals/new?analysis=${encodeURIComponent(JSON.stringify(analysis))}${dateQuery}`
+        `/meals/new?analysis=${encodeURIComponent(JSON.stringify(analysis))}${dateQuery}${typeQuery}`
       );
     } catch {
       setError("L'analyse a échoué. Veuillez réessayer.");
@@ -117,7 +125,16 @@ function ScanForm() {
           {/* Manual entry link */}
           <div className="text-center animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 fill-mode-backwards">
             <Link
-              href={dateParam ? `/meals/new?date=${dateParam}` : "/meals/new"}
+              href={
+                dateParam || mealTypeParam
+                  ? `/meals/new?${[
+                      dateParam ? `date=${dateParam}` : null,
+                      mealTypeParam ? `type=${mealTypeParam}` : null,
+                    ]
+                      .filter(Boolean)
+                      .join("&")}`
+                  : "/meals/new"
+              }
               className="text-sm font-medium underline-offset-4 hover:underline"
               style={{ color: "#A4B465" }}
             >
@@ -166,7 +183,16 @@ function ScanForm() {
                     Reprendre une photo
                   </button>
                   <Link
-                    href={dateParam ? `/meals/new?date=${dateParam}` : "/meals/new"}
+                    href={
+                      dateParam || mealTypeParam
+                        ? `/meals/new?${[
+                            dateParam ? `date=${dateParam}` : null,
+                            mealTypeParam ? `type=${mealTypeParam}` : null,
+                          ]
+                            .filter(Boolean)
+                            .join("&")}`
+                        : "/meals/new"
+                    }
                     className="w-full h-11 rounded-xl font-medium text-sm border border-border flex items-center justify-center gap-2 hover:bg-muted transition-colors"
                   >
                     Entrer manuellement

@@ -26,14 +26,21 @@ function getDefaultMealType(): MealType {
   return "dinner";
 }
 
+function isMealType(value: string | null): value is MealType {
+  return value === "breakfast" || value === "lunch" || value === "dinner" || value === "snack";
+}
+
 function NewMealForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const dateParam = searchParams.get("date");
+  const typeParam = searchParams.get("type");
   const dashboardUrl = dateParam ? `/dashboard?date=${dateParam}` : "/dashboard";
 
   const [name, setName] = useState("");
-  const [mealType, setMealType] = useState<MealType>(getDefaultMealType());
+  const [mealType, setMealType] = useState<MealType>(
+    isMealType(typeParam) ? typeParam : getDefaultMealType(),
+  );
   const [calories, setCalories] = useState("");
   const [carbsG, setCarbsG] = useState("");
   const [proteinG, setProteinG] = useState("");
@@ -45,6 +52,9 @@ function NewMealForm() {
   const [estimateError, setEstimateError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (isMealType(typeParam)) {
+      setMealType(typeParam);
+    }
     const analysisParam = searchParams.get("analysis");
     if (analysisParam) {
       try {
@@ -59,7 +69,7 @@ function NewMealForm() {
         // ignore parse errors
       }
     }
-  }, [searchParams]);
+  }, [searchParams, typeParam]);
 
   const handleEstimate = async () => {
     if (!description.trim()) return;

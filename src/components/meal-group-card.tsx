@@ -19,6 +19,7 @@ export function MealGroupCard({ mealType, label, meals, goalCalories, date, clas
   const firstMealId = meals[0]?.id;
   const detailHref = firstMealId ? `/meals/${firstMealId}?date=${date}` : null;
   const addHref = `/scan?date=${date}&type=${mealType}`;
+  const visibleMeals = meals.slice(0, 3);
 
   const Wrapper: React.ElementType = detailHref ? Link : "div";
   const wrapperProps = detailHref ? { href: detailHref } : {};
@@ -52,12 +53,30 @@ export function MealGroupCard({ mealType, label, meals, goalCalories, date, clas
         </div>
       </Wrapper>
 
-      <div className="flex items-center -space-x-2 shrink-0">
-        {meals.slice(0, 2).map((meal) => (
+      <div
+        className="group relative shrink-0 h-9"
+        style={{ width: 36 + visibleMeals.length * 27 }}
+      >
+        <Link
+          href={addHref}
+          aria-label={`Ajouter ${label}`}
+          className="absolute right-0 top-0 z-10 size-9 rounded-full ring-2 ring-card flex items-center justify-center"
+          style={{ backgroundColor: "var(--sane-accent-soft)" }}
+        >
+          <Plus className="size-4" style={{ color: "var(--sane-accent)" }} />
+        </Link>
+        {visibleMeals.map((meal, index) => (
           <Link
             key={meal.id}
             href={`/meals/${meal.id}?date=${date}`}
-            className="size-9 rounded-full ring-2 ring-card overflow-hidden bg-muted flex items-center justify-center"
+            className="absolute top-0 size-9 rounded-full ring-2 ring-card overflow-hidden bg-muted flex items-center justify-center transition-[right] duration-200 right-[var(--stack-rest-right)] md:group-hover:right-[var(--stack-hover-right)]"
+            style={
+              {
+                zIndex: visibleMeals.length - index,
+                "--stack-rest-right": `${(index + 1) * 27}px`,
+                "--stack-hover-right": `${44 + index * 18}px`,
+              } as React.CSSProperties
+            }
             aria-label={meal.name}
           >
             {meal.imageUrl ? (
@@ -71,14 +90,6 @@ export function MealGroupCard({ mealType, label, meals, goalCalories, date, clas
             )}
           </Link>
         ))}
-        <Link
-          href={addHref}
-          aria-label={`Ajouter ${label}`}
-          className="size-9 rounded-full ring-2 ring-card flex items-center justify-center"
-          style={{ backgroundColor: "var(--sane-accent-soft)" }}
-        >
-          <Plus className="size-4" style={{ color: "var(--sane-accent)" }} />
-        </Link>
       </div>
     </div>
   );

@@ -24,6 +24,7 @@ const ACTIVITY_ICONS: Record<string, LucideIcon> = {
 export function ActivityGroupCard({ activities, goalBurn, date, className }: ActivityGroupCardProps) {
   const totalBurned = activities.reduce((sum, a) => sum + a.caloriesBurned, 0);
   const firstActivity = activities[0];
+  const visibleActivities = activities.slice(0, 3);
 
   const Wrapper: React.ElementType = firstActivity ? Link : "div";
   const wrapperProps = firstActivity
@@ -59,29 +60,39 @@ export function ActivityGroupCard({ activities, goalBurn, date, className }: Act
         </div>
       </Wrapper>
 
-      <div className="flex items-center -space-x-2 shrink-0">
-        {activities.slice(0, 2).map((a) => {
+      <div
+        className="group relative shrink-0 h-9"
+        style={{ width: 36 + visibleActivities.length * 27 }}
+      >
+        <Link
+          href={`/activities/new?date=${date}`}
+          aria-label="Ajouter une activité"
+          className="absolute right-0 top-0 z-10 size-9 rounded-full ring-2 ring-card flex items-center justify-center"
+          style={{ backgroundColor: "var(--sane-burn-soft)" }}
+        >
+          <Plus className="size-4" style={{ color: "var(--sane-burn)" }} />
+        </Link>
+        {visibleActivities.map((a, index) => {
           const Icon = ACTIVITY_ICONS[a.activityType] ?? Flame;
           return (
             <Link
               key={a.id}
               href={`/activities/${a.id}?date=${date}`}
-              className="size-9 rounded-full ring-2 ring-card flex items-center justify-center"
-              style={{ backgroundColor: "var(--sane-burn-soft)" }}
+              className="absolute top-0 size-9 rounded-full ring-2 ring-card flex items-center justify-center transition-[right] duration-200 right-[var(--stack-rest-right)] md:group-hover:right-[var(--stack-hover-right)]"
+              style={
+                {
+                  backgroundColor: "var(--sane-burn-soft)",
+                  zIndex: visibleActivities.length - index,
+                  "--stack-rest-right": `${(index + 1) * 27}px`,
+                  "--stack-hover-right": `${44 + index * 18}px`,
+                } as React.CSSProperties
+              }
               aria-label={a.activityType}
             >
               <Icon className="size-4" style={{ color: "var(--sane-burn)" }} />
             </Link>
           );
         })}
-        <Link
-          href={`/activities/new?date=${date}`}
-          aria-label="Ajouter une activité"
-          className="size-9 rounded-full ring-2 ring-card flex items-center justify-center"
-          style={{ backgroundColor: "var(--sane-burn-soft)" }}
-        >
-          <Plus className="size-4" style={{ color: "var(--sane-burn)" }} />
-        </Link>
       </div>
     </div>
   );

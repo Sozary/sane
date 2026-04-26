@@ -241,7 +241,7 @@ function DashboardContent() {
             >
               <div className="flex gap-3 px-4 pb-1">
                 {MEAL_TYPES.map((m) => (
-                  <div key={m.type} className="snap-start shrink-0 w-[88%]">
+                  <div key={m.type} className="snap-start shrink-0 w-[84%]">
                     <MealGroupCard
                       mealType={m.type}
                       label={m.label}
