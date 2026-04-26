@@ -232,17 +232,6 @@ export function DateNavigator({ date, onDateChange, className, dayDots }: DateNa
         </button>
       </div>
 
-      {!isOnToday ? (
-        <div className="flex justify-center">
-          <button
-            type="button"
-            onClick={() => onDateChange(today)}
-            className="h-8 px-3 rounded-full bg-card text-xs font-medium text-muted-foreground shadow-sm hover:text-foreground transition-colors"
-          >
-            Aujourd&apos;hui
-          </button>
-        </div>
-      ) : null}
     </div>
   );
 }
