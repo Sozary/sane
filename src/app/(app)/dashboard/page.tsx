@@ -72,6 +72,7 @@ function DashboardContent() {
   const [contentDirection, setContentDirection] = useState<1 | -1>(1);
   const swipeStartRef = useRef<{ x: number; y: number } | null>(null);
   const swipeTriggeredRef = useRef(false);
+  const SWIPE_EDGE_GUTTER = 36;
 
   const dateStr = formatDate(date);
 
@@ -228,6 +229,13 @@ function DashboardContent() {
         if (!window.matchMedia("(hover: none)").matches) return;
         const target = e.target as HTMLElement;
         if (target.closest("[data-swipe-ignore='true']")) return;
+        if (target.closest("a, button, input, textarea, select, [role='button']")) return;
+        if (
+          e.clientX <= SWIPE_EDGE_GUTTER ||
+          e.clientX >= window.innerWidth - SWIPE_EDGE_GUTTER
+        ) {
+          return;
+        }
         swipeStartRef.current = { x: e.clientX, y: e.clientY };
         swipeTriggeredRef.current = false;
       }}

@@ -19,27 +19,11 @@ interface DateNavigatorProps {
 }
 
 const DAY_LABELS_FR = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
-const MONTH_LABELS_FR = [
-  "Jan",
-  "Fév",
-  "Mar",
-  "Avr",
-  "Mai",
-  "Juin",
-  "Juil",
-  "Août",
-  "Sept",
-  "Oct",
-  "Nov",
-  "Déc",
-];
+const MONTH_LABELS_FR = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sept", "Oct", "Nov", "Déc"];
 
-function startOfWeekMonday(date: Date): Date {
+function startOfDay(date: Date): Date {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
-  // JS getDay: 0=Sun..6=Sat. Map to Mon-based: (getDay+6)%7 = days since Monday
-  const offset = (d.getDay() + 6) % 7;
-  d.setDate(d.getDate() - offset);
   return d;
 }
 
@@ -59,39 +43,55 @@ function formatDateKey(d: Date) {
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 }
 
+function diffDays(a: Date, b: Date) {
+  return Math.floor((a.getTime() - b.getTime()) / 86400000);
+}
+
 export function DateNavigator({ date, onDateChange, className, dayDots }: DateNavigatorProps) {
-  const today = new Date();
-  const isOnToday = isSameDay(date, today);
-  const [weekAnchor, setWeekAnchor] = useState<Date>(() => startOfWeekMonday(date));
+  const today = startOfDay(new Date());
+  const [windowEnd, setWindowEnd] = useState<Date>(today);
   const [direction, setDirection] = useState<1 | -1>(1);
   const pointerStart = useRef<{ x: number; y: number } | null>(null);
   const dragged = useRef(false);
 
   useEffect(() => {
-    const selectedWeek = startOfWeekMonday(date);
-    const isWithinVisibleDays = days.some((d) => isSameDay(d, date));
-    if (!isWithinVisibleDays && selectedWeek.getTime() !== weekAnchor.getTime()) {
-      setDirection(selectedWeek.getTime() > weekAnchor.getTime() ? 1 : -1);
-      setWeekAnchor(selectedWeek);
+    const selected = startOfDay(date);
+    const daysFromToday = Math.max(0, diffDays(today, selected));
+
+    if (daysFromToday <= 6) {
+      setWindowEnd((prev) => {
+        if (prev.getTime() === today.getTime()) return prev;
+        setDirection(1);
+        return today;
+      });
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    const pageOffset = Math.floor(daysFromToday / 7);
+    const nextWindowEnd = new Date(today);
+    nextWindowEnd.setDate(today.getDate() - pageOffset * 7);
+
+    setWindowEnd((prev) => {
+      if (prev.getTime() === nextWindowEnd.getTime()) return prev;
+      setDirection(nextWindowEnd.getTime() > prev.getTime() ? 1 : -1);
+      return nextWindowEnd;
+    });
   }, [date]);
 
   const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(weekAnchor);
-    d.setDate(d.getDate() + i);
+    const d = new Date(windowEnd);
+    d.setDate(windowEnd.getDate() - (6 - i));
     return d;
   });
 
-  const shiftWeek = (delta: 1 | -1) => {
-    const next = new Date(weekAnchor);
+  const shiftWindow = (delta: 1 | -1) => {
+    const next = new Date(windowEnd);
     next.setDate(next.getDate() + delta * 7);
     setDirection(delta);
-    setWeekAnchor(next);
+    setWindowEnd(next);
   };
 
-  const startOfThisWeek = startOfWeekMonday(today);
-  const canGoNext = weekAnchor.getTime() < startOfThisWeek.getTime();
+  const canGoNext = windowEnd.getTime() < today.getTime();
 
   const onPointerDown = (e: React.PointerEvent) => {
     pointerStart.current = { x: e.clientX, y: e.clientY };
@@ -110,8 +110,8 @@ export function DateNavigator({ date, onDateChange, className, dayDots }: DateNa
     const dy = e.clientY - pointerStart.current.y;
     pointerStart.current = null;
     if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
-      if (dx < 0 && canGoNext) shiftWeek(1);
-      else if (dx > 0) shiftWeek(-1);
+      if (dx < 0 && canGoNext) shiftWindow(1);
+      else if (dx > 0) shiftWindow(-1);
     }
   };
 
@@ -129,8 +129,8 @@ export function DateNavigator({ date, onDateChange, className, dayDots }: DateNa
       >
         <button
           type="button"
-          onClick={() => shiftWeek(-1)}
-          aria-label="Semaine précédente"
+          onClick={() => shiftWindow(-1)}
+          aria-label="7 jours précédents"
           className="shrink-0 flex items-center justify-center w-7 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
         >
           <ChevronLeft className="size-4" />
@@ -138,7 +138,7 @@ export function DateNavigator({ date, onDateChange, className, dayDots }: DateNa
 
         <div className="flex-1 overflow-hidden">
           <div
-            key={weekAnchor.getTime()}
+            key={windowEnd.getTime()}
             className={cn(
               "flex items-stretch gap-1 animate-in fade-in duration-300",
               direction === 1 ? "slide-in-from-right-6" : "slide-in-from-left-6",
@@ -221,9 +221,9 @@ export function DateNavigator({ date, onDateChange, className, dayDots }: DateNa
 
         <button
           type="button"
-          onClick={() => canGoNext && shiftWeek(1)}
+          onClick={() => canGoNext && shiftWindow(1)}
           disabled={!canGoNext}
-          aria-label="Semaine suivante"
+          aria-label="7 jours suivants"
           className={cn(
             "shrink-0 flex items-center justify-center w-7 text-muted-foreground transition-colors",
             canGoNext ? "hover:text-foreground cursor-pointer" : "opacity-30 cursor-not-allowed",
