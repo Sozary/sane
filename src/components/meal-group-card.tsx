@@ -17,20 +17,22 @@ interface MealGroupCardProps {
 
 export function MealGroupCard({ mealType, label, meals, goalCalories, date, className }: MealGroupCardProps) {
   const totalCalories = meals.reduce((sum, m) => sum + m.calories, 0);
-  const firstMealId = meals[0]?.id;
-  const detailHref = firstMealId ? `/meals/${firstMealId}?date=${date}` : null;
   const addHref = `/scan?date=${date}&type=${mealType}`;
   const visibleMeals = meals.slice(0, 3);
   const [mobileExpanded, setMobileExpanded] = useState(false);
-
-  const Wrapper: React.ElementType = detailHref ? Link : "div";
-  const wrapperProps = detailHref ? { href: detailHref } : {};
 
   useEffect(() => {
     if (!mobileExpanded) return;
     const timeoutId = window.setTimeout(() => setMobileExpanded(false), 2200);
     return () => window.clearTimeout(timeoutId);
   }, [mobileExpanded]);
+
+  const handlePreviewClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!window.matchMedia("(hover: none)").matches) return;
+    if (mobileExpanded) return;
+    event.preventDefault();
+    setMobileExpanded(true);
+  };
 
   const handleCardClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (!window.matchMedia("(hover: none)").matches) return;
@@ -47,10 +49,7 @@ export function MealGroupCard({ mealType, label, meals, goalCalories, date, clas
         className,
       )}
     >
-      <Wrapper
-        {...wrapperProps}
-        className="flex-1 min-w-0 flex flex-col gap-1"
-      >
+      <div className="flex-1 min-w-0 flex flex-col gap-1">
         <span
           className="text-xs font-semibold"
           style={{ color: "var(--sane-accent)" }}
@@ -67,7 +66,7 @@ export function MealGroupCard({ mealType, label, meals, goalCalories, date, clas
             </span>
           ) : null}
         </div>
-      </Wrapper>
+      </div>
 
       <div
         className="relative shrink-0 h-9"
@@ -87,6 +86,7 @@ export function MealGroupCard({ mealType, label, meals, goalCalories, date, clas
             <Link
               key={meal.id}
               href={`/meals/${meal.id}?date=${date}`}
+              onClick={handlePreviewClick}
               className={cn(
                 "absolute top-0 size-9 rounded-full ring-2 ring-card overflow-hidden bg-muted flex items-center justify-center transition-[right] duration-200",
                 mobileExpanded

@@ -24,20 +24,21 @@ const ACTIVITY_ICONS: Record<string, LucideIcon> = {
 
 export function ActivityGroupCard({ activities, goalBurn, date, className }: ActivityGroupCardProps) {
   const totalBurned = activities.reduce((sum, a) => sum + a.caloriesBurned, 0);
-  const firstActivity = activities[0];
   const visibleActivities = activities.slice(0, 3);
   const [mobileExpanded, setMobileExpanded] = useState(false);
-
-  const Wrapper: React.ElementType = firstActivity ? Link : "div";
-  const wrapperProps = firstActivity
-    ? { href: `/activities/${firstActivity.id}?date=${date}` }
-    : {};
 
   useEffect(() => {
     if (!mobileExpanded) return;
     const timeoutId = window.setTimeout(() => setMobileExpanded(false), 2200);
     return () => window.clearTimeout(timeoutId);
   }, [mobileExpanded]);
+
+  const handlePreviewClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!window.matchMedia("(hover: none)").matches) return;
+    if (mobileExpanded) return;
+    event.preventDefault();
+    setMobileExpanded(true);
+  };
 
   const handleCardClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (!window.matchMedia("(hover: none)").matches) return;
@@ -54,10 +55,7 @@ export function ActivityGroupCard({ activities, goalBurn, date, className }: Act
         className,
       )}
     >
-      <Wrapper
-        {...wrapperProps}
-        className="flex-1 min-w-0 flex flex-col gap-1"
-      >
+      <div className="flex-1 min-w-0 flex flex-col gap-1">
         <span
           className="text-xs font-semibold"
           style={{ color: "var(--sane-burn)" }}
@@ -74,7 +72,7 @@ export function ActivityGroupCard({ activities, goalBurn, date, className }: Act
             </span>
           ) : null}
         </div>
-      </Wrapper>
+      </div>
 
       <div
         className="relative shrink-0 h-9"
@@ -95,6 +93,7 @@ export function ActivityGroupCard({ activities, goalBurn, date, className }: Act
             <Link
               key={a.id}
               href={`/activities/${a.id}?date=${date}`}
+              onClick={handlePreviewClick}
               className={cn(
                 "absolute top-0 size-9 rounded-full ring-2 ring-card flex items-center justify-center transition-[right] duration-200",
                 mobileExpanded
