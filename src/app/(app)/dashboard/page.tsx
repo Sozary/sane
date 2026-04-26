@@ -1,14 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, Suspense, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CalorieRing } from "@/components/calorie-ring";
-import { MacroBar } from "@/components/macro-bar";
-import { MealCard } from "@/components/meal-card";
-import { ActivityCard } from "@/components/activity-card";
-import { DateNavigator } from "@/components/date-navigator";
-import { Flame, Plus, Loader2 } from "lucide-react";
-import Link from "next/link";
+import { SummaryCard } from "@/components/summary-card";
+import { MealGroupCard } from "@/components/meal-group-card";
+import { ActivityGroupCard } from "@/components/activity-group-card";
+import { DateNavigator, type DateNavigatorDayDots } from "@/components/date-navigator";
+import { Loader2 } from "lucide-react";
 import type { Meal, Activity } from "@/types";
 
 interface DashboardData {
@@ -22,6 +20,31 @@ interface DashboardData {
   meals: Meal[];
   activities: Activity[];
 }
+
+interface MonthDayAggregate {
+  carbsPct: number;
+  proteinPct: number;
+  fatPct: number;
+}
+
+function inTarget(pct: number) {
+  return pct >= 90 && pct <= 110;
+}
+
+function monthKey(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+const MEAL_TYPES: Array<{
+  type: "breakfast" | "lunch" | "dinner" | "snack";
+  label: string;
+  ratio: number;
+}> = [
+  { type: "breakfast", label: "Petit-déjeuner", ratio: 0.25 },
+  { type: "lunch", label: "Déjeuner", ratio: 0.35 },
+  { type: "dinner", label: "Dîner", ratio: 0.3 },
+  { type: "snack", label: "Collation", ratio: 0.1 },
+];
 
 function formatDate(date: Date): string {
   const y = date.getFullYear();
@@ -43,20 +66,25 @@ function DashboardContent() {
   });
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [monthDays, setMonthDays] = useState<Record<string, MonthDayAggregate>>({});
+  const [fetchedMonths, setFetchedMonths] = useState<Set<string>>(new Set());
 
   const dateStr = formatDate(date);
 
-  const handleDateChange = useCallback((newDate: Date) => {
-    setDate(newDate);
-    setLoading(true);
-    const newDateStr = formatDate(newDate);
-    const today = formatDate(new Date());
-    if (newDateStr === today) {
-      router.replace("/dashboard", { scroll: false });
-    } else {
-      router.replace(`/dashboard?date=${newDateStr}`, { scroll: false });
-    }
-  }, [router]);
+  const handleDateChange = useCallback(
+    (newDate: Date) => {
+      setDate(newDate);
+      setLoading(true);
+      const newDateStr = formatDate(newDate);
+      const today = formatDate(new Date());
+      if (newDateStr === today) {
+        router.replace("/dashboard", { scroll: false });
+      } else {
+        router.replace(`/dashboard?date=${newDateStr}`, { scroll: false });
+      }
+    },
+    [router],
+  );
 
   useEffect(() => {
     async function fetchData() {
@@ -76,128 +104,150 @@ function DashboardContent() {
     fetchData();
   }, [date]);
 
-  // Use previous data while loading to keep animations visible
-  const displayData = data ?? { caloriesConsumed: 0, caloriesBurned: 0, calorieGoal: 2000, carbsG: 0, proteinG: 0, fatG: 0, macroGoals: { carbsG: 0, proteinG: 0, fatG: 0 }, meals: [], activities: [] };
-  const remaining = Math.max(0, displayData.calorieGoal - displayData.caloriesConsumed + displayData.caloriesBurned);
+  // Fetch monthly aggregates for the current selected date's month + adjacent months,
+  // so the week strip can show macro-target dots even when a week spans a month boundary.
+  useEffect(() => {
+    const months = new Set<string>();
+    const m0 = new Date(date.getFullYear(), date.getMonth(), 1);
+    const mPrev = new Date(date.getFullYear(), date.getMonth() - 1, 1);
+    const mNext = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+    months.add(monthKey(m0));
+    months.add(monthKey(mPrev));
+    months.add(monthKey(mNext));
+
+    const toFetch = [...months].filter((m) => !fetchedMonths.has(m));
+    if (toFetch.length === 0) return;
+
+    let cancelled = false;
+    Promise.all(
+      toFetch.map(async (m) => {
+        try {
+          const res = await fetch(`/api/daily-log/month?month=${m}`);
+          if (!res.ok) return null;
+          return (await res.json()) as { days: Record<string, MonthDayAggregate> };
+        } catch {
+          return null;
+        }
+      }),
+    ).then((results) => {
+      if (cancelled) return;
+      setMonthDays((prev) => {
+        const next = { ...prev };
+        for (const r of results) {
+          if (r?.days) Object.assign(next, r.days);
+        }
+        return next;
+      });
+      setFetchedMonths((prev) => {
+        const next = new Set(prev);
+        for (const m of toFetch) next.add(m);
+        return next;
+      });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [date, fetchedMonths]);
+
+  // Re-fetch the current month's aggregate after the user changes today's data
+  // so the dots stay in sync.
+  useEffect(() => {
+    if (!data) return;
+    const m = monthKey(date);
+    fetch(`/api/daily-log/month?month=${m}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json: { days: Record<string, MonthDayAggregate> } | null) => {
+        if (!json?.days) return;
+        setMonthDays((prev) => ({ ...prev, ...json.days }));
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.caloriesConsumed, data?.carbsG, data?.proteinG, data?.fatG]);
+
+  const dayDots = useMemo<Record<string, DateNavigatorDayDots>>(() => {
+    const result: Record<string, DateNavigatorDayDots> = {};
+    for (const [key, day] of Object.entries(monthDays)) {
+      result[key] = {
+        carbsHit: inTarget(day.carbsPct),
+        proteinHit: inTarget(day.proteinPct),
+        fatHit: inTarget(day.fatPct),
+      };
+    }
+    return result;
+  }, [monthDays]);
+
+  const displayData = data ?? {
+    caloriesConsumed: 0,
+    caloriesBurned: 0,
+    calorieGoal: 2000,
+    carbsG: 0,
+    proteinG: 0,
+    fatG: 0,
+    macroGoals: { carbsG: 0, proteinG: 0, fatG: 0 },
+    meals: [],
+    activities: [],
+  };
+
+  const mealsByType = useMemo(() => {
+    const grouped: Record<string, Meal[]> = {
+      breakfast: [],
+      lunch: [],
+      dinner: [],
+      snack: [],
+    };
+    for (const meal of displayData.meals) {
+      const key = meal.mealType in grouped ? meal.mealType : "snack";
+      grouped[key].push(meal);
+    }
+    return grouped;
+  }, [displayData.meals]);
 
   return (
-    <div className="px-4 py-6 space-y-6">
-      {/* Date Navigator */}
-      <DateNavigator date={date} onDateChange={handleDateChange} />
+    <div className="px-4 pt-6 pb-40 space-y-5">
+      <div className="animate-in fade-in slide-in-from-top-2 duration-500">
+        <DateNavigator date={date} onDateChange={handleDateChange} dayDots={dayDots} />
+      </div>
 
-      {/* Calorie Ring */}
-      <div className="flex flex-col items-center gap-3">
-        <CalorieRing value={displayData.caloriesConsumed} max={displayData.calorieGoal} size={200} strokeWidth={10}>
-          {loading ? (
-            <>
-              <div className="h-9 w-20 rounded bg-muted animate-pulse" />
-              <div className="h-3 w-16 rounded bg-muted animate-pulse mt-1" />
-            </>
-          ) : (
-            <>
-              <span className="text-4xl font-bold tabular-nums">{remaining.toLocaleString("fr-FR")}</span>
-              <span className="text-xs text-muted-foreground">kcal restantes</span>
-            </>
-          )}
-        </CalorieRing>
+      <div className="animate-in fade-in slide-in-from-bottom-3 duration-500 delay-100 fill-mode-backwards">
+        <SummaryCard
+          caloriesConsumed={displayData.caloriesConsumed}
+          caloriesBurned={displayData.caloriesBurned}
+          calorieGoal={displayData.calorieGoal}
+          carbsG={displayData.carbsG}
+          proteinG={displayData.proteinG}
+          fatG={displayData.fatG}
+          macroGoals={displayData.macroGoals}
+          loading={loading}
+        />
+      </div>
 
-        <div className="flex items-center gap-6 text-sm">
-          {loading ? (
-            <>
-              <div className="h-4 w-24 rounded bg-muted animate-pulse" />
-              <div className="h-4 w-24 rounded bg-muted animate-pulse" />
-            </>
-          ) : (
-            <>
-              <div className="flex items-center gap-1.5">
-                <Flame className="size-4" style={{ color: "#E8384F" }} />
-                <span className="tabular-nums">{Math.round(displayData.caloriesConsumed)}</span>
-                <span className="text-muted-foreground">Mangées</span>
+      <div className="space-y-3 animate-in fade-in slide-in-from-bottom-3 duration-500 delay-200 fill-mode-backwards">
+        <h2 className="font-bold text-lg">Repas</h2>
+        <div className="-mx-4 px-4 overflow-x-auto no-scrollbar snap-x snap-mandatory">
+          <div className="flex gap-3 pb-1">
+            {MEAL_TYPES.map((m) => (
+              <div key={m.type} className="snap-start shrink-0 w-[88%]">
+                <MealGroupCard
+                  mealType={m.type}
+                  label={m.label}
+                  meals={mealsByType[m.type] ?? []}
+                  goalCalories={Math.round(displayData.calorieGoal * m.ratio)}
+                  date={dateStr}
+                />
               </div>
-              <div className="flex items-center gap-1.5">
-                <Flame className="size-4 text-orange-500" />
-                <span className="tabular-nums">{Math.round(displayData.caloriesBurned)}</span>
-                <span className="text-muted-foreground">Brûlées</span>
-              </div>
-            </>
-          )}
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Macro Bars - always rendered so animations play on day change */}
-      <div className="space-y-3">
-        <MacroBar label="Glucides" current={displayData.carbsG} goal={displayData.macroGoals.carbsG} color="#3B82F6" />
-        <MacroBar label="Protéines" current={displayData.proteinG} goal={displayData.macroGoals.proteinG} color="#EF4444" />
-        <MacroBar label="Lipides" current={displayData.fatG} goal={displayData.macroGoals.fatG} color="#F59E0B" />
-      </div>
-
-      {/* Nourriture */}
-      <div className="space-y-3">
-        <h2 className="font-semibold text-lg">Nourriture</h2>
-        {loading ? (
-          <div className="space-y-2">
-            <div className="h-16 rounded-xl bg-muted animate-pulse" />
-          </div>
-        ) : displayData.meals.length > 0 ? (
-          <div className="space-y-2">
-            {displayData.meals.map((meal) => (
-              <MealCard
-                key={meal.id}
-                id={meal.id}
-                name={meal.name}
-                calories={meal.calories}
-                mealType={meal.mealType}
-                imageUrl={meal.imageUrl}
-                date={dateStr}
-              />
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground text-center py-4">
-            Aucun repas enregistré
-          </p>
-        )}
-        <Link
-          href={`/scan?date=${dateStr}`}
-          className="flex items-center justify-center gap-2 w-full h-12 rounded-xl border-2 border-dashed border-border text-muted-foreground hover:border-foreground hover:text-foreground transition-colors"
-        >
-          <Plus className="size-5" />
-          <span className="text-sm font-medium">Ajouter un repas</span>
-        </Link>
-      </div>
-
-      {/* Activités */}
-      <div className="space-y-3">
-        <h2 className="font-semibold text-lg">Activités</h2>
-        {loading ? (
-          <div className="space-y-2">
-            <div className="h-16 rounded-xl bg-muted animate-pulse" />
-          </div>
-        ) : displayData.activities.length > 0 ? (
-          <div className="space-y-2">
-            {displayData.activities.map((activity) => (
-              <ActivityCard
-                key={activity.id}
-                id={activity.id}
-                activityType={activity.activityType}
-                durationMinutes={activity.durationMinutes}
-                caloriesBurned={activity.caloriesBurned}
-                date={dateStr}
-              />
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground text-center py-4">
-            Aucune activité enregistrée
-          </p>
-        )}
-        <Link
-          href={`/activities/new?date=${dateStr}`}
-          className="flex items-center justify-center gap-2 w-full h-12 rounded-xl border-2 border-dashed border-border text-muted-foreground hover:border-foreground hover:text-foreground transition-colors"
-        >
-          <Plus className="size-5" />
-          <span className="text-sm font-medium">Ajouter une activité</span>
-        </Link>
+      <div className="space-y-3 animate-in fade-in slide-in-from-bottom-3 duration-500 delay-300 fill-mode-backwards">
+        <h2 className="font-bold text-lg">Activités</h2>
+        <ActivityGroupCard
+          activities={displayData.activities}
+          goalBurn={0}
+          date={dateStr}
+        />
       </div>
     </div>
   );

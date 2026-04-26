@@ -95,9 +95,9 @@ export function MonthCalendar({
 
           const dots: string[] = [];
           if (day) {
-            if (inTarget(day.carbsPct)) dots.push("#3B82F6");
-            if (inTarget(day.proteinPct)) dots.push("#EF4444");
-            if (inTarget(day.fatPct)) dots.push("#F59E0B");
+            if (inTarget(day.carbsPct)) dots.push("#A4B465");
+            if (inTarget(day.proteinPct)) dots.push("#F5B547");
+            if (inTarget(day.fatPct)) dots.push("#1F1F1F");
           }
 
           return (
@@ -109,13 +109,13 @@ export function MonthCalendar({
                 "relative aspect-square flex flex-col items-center justify-center rounded-lg text-sm transition-colors",
                 !isCurrentMonth && "text-muted-foreground/40",
                 isCurrentMonth && !inRange && "hover:bg-muted/60",
-                inRange && "bg-[#E8384F]/10",
-                (isRangeStart || isRangeEnd) && "bg-[#E8384F]/20",
-                isSelected && "ring-2 ring-[#E8384F]",
+                inRange && "bg-[#A4B465]/10",
+                (isRangeStart || isRangeEnd) && "bg-[#A4B465]/20",
+                isSelected && "ring-2 ring-[#A4B465]",
                 isToday && !isSelected && "font-bold"
               )}
             >
-              <span className={cn("tabular-nums", isToday && "text-[#E8384F]")}>
+              <span className={cn("tabular-nums", isToday && "text-[#A4B465]")}>
                 {cell.getDate()}
               </span>
               {dots.length > 0 && (

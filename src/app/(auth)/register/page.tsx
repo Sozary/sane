@@ -58,7 +58,7 @@ export default function RegisterPage() {
   return (
     <>
       <div className="text-center space-y-2">
-        <p className="text-3xl font-bold" style={{ color: "#E8384F" }}>
+        <p className="text-3xl font-bold" style={{ color: "#A4B465" }}>
           Sane
         </p>
         <h1 className="text-2xl font-bold text-foreground">Créer un compte</h1>
@@ -77,7 +77,7 @@ export default function RegisterPage() {
             onChange={(e) => setName(e.target.value)}
             className={cn(
               "h-12 rounded-xl border border-border",
-              "focus-visible:ring-[#E8384F] focus-visible:border-[#E8384F]"
+              "focus-visible:ring-[#A4B465] focus-visible:border-[#A4B465]"
             )}
           />
         </div>
@@ -95,7 +95,7 @@ export default function RegisterPage() {
             required
             className={cn(
               "h-12 rounded-xl border border-border",
-              "focus-visible:ring-[#E8384F] focus-visible:border-[#E8384F]"
+              "focus-visible:ring-[#A4B465] focus-visible:border-[#A4B465]"
             )}
           />
         </div>
@@ -114,7 +114,7 @@ export default function RegisterPage() {
             minLength={8}
             className={cn(
               "h-12 rounded-xl border border-border",
-              "focus-visible:ring-[#E8384F] focus-visible:border-[#E8384F]"
+              "focus-visible:ring-[#A4B465] focus-visible:border-[#A4B465]"
             )}
           />
         </div>
@@ -125,7 +125,7 @@ export default function RegisterPage() {
           type="submit"
           disabled={loading}
           className="w-full h-12 rounded-xl text-white font-medium"
-          style={{ backgroundColor: "#E8384F" }}
+          style={{ backgroundColor: "#A4B465" }}
         >
           {loading ? "Inscription..." : "S'inscrire"}
         </Button>
@@ -133,7 +133,7 @@ export default function RegisterPage() {
 
       <p className="text-sm text-center text-muted-foreground">
         Déjà un compte ?{" "}
-        <Link href="/login" className="font-medium" style={{ color: "#E8384F" }}>
+        <Link href="/login" className="font-medium" style={{ color: "#A4B465" }}>
           Se connecter
         </Link>
       </p>

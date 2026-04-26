@@ -86,8 +86,8 @@ export function NotificationPrompt() {
   return (
     <div className="fixed bottom-24 left-4 right-4 max-w-md mx-auto z-50 animate-in slide-in-from-bottom-4 fade-in duration-300">
       <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 flex items-start gap-3">
-        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#E8384F]/10 flex items-center justify-center">
-          <Bell className="w-5 h-5 text-[#E8384F]" />
+        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#A4B465]/10 flex items-center justify-center">
+          <Bell className="w-5 h-5 text-[#A4B465]" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-[#1A1A1A]">
@@ -99,7 +99,7 @@ export function NotificationPrompt() {
           <div className="flex gap-2 mt-3">
             <button
               onClick={handleAccept}
-              className="px-4 py-1.5 text-xs font-medium text-white bg-[#E8384F] rounded-lg hover:bg-[#d42f44] transition-colors"
+              className="px-4 py-1.5 text-xs font-medium text-white bg-[#A4B465] rounded-lg hover:bg-[#d42f44] transition-colors"
             >
               Activer
             </button>

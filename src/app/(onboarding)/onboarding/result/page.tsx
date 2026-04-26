@@ -42,7 +42,7 @@ export default function OnboardingResultPage() {
           max={3000}
           size={240}
           strokeWidth={14}
-          color="#E8384F"
+          color="#A4B465"
         >
           <span className="text-5xl font-bold text-white">
             {formatNumber(tdee)}
@@ -58,7 +58,7 @@ export default function OnboardingResultPage() {
       <button
         onClick={handleContinue}
         className="w-full max-w-md h-12 rounded-xl text-white font-semibold text-base"
-        style={{ backgroundColor: "#E8384F" }}
+        style={{ backgroundColor: "#A4B465" }}
       >
         Continuer
       </button>

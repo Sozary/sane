@@ -138,7 +138,7 @@ function MealDetailForm() {
         >
           <Heart
             className={cn("size-5", isFavorite && "fill-current")}
-            style={{ color: "#E8384F" }}
+            style={{ color: "#A4B465" }}
           />
         </button>
       </div>
@@ -181,7 +181,7 @@ function MealDetailForm() {
               )}
               style={
                 mealType === type.value
-                  ? { backgroundColor: "#E8384F" }
+                  ? { backgroundColor: "#A4B465" }
                   : undefined
               }
             >
@@ -195,7 +195,7 @@ function MealDetailForm() {
       <div className="space-y-2">
         <Label htmlFor="calories">Calories</Label>
         <div className="flex items-center gap-3 rounded-xl bg-muted/30 px-4 py-3">
-          <Flame className="size-5" style={{ color: "#E8384F" }} />
+          <Flame className="size-5" style={{ color: "#A4B465" }} />
           <input
             id="calories"
             type="number"
@@ -212,9 +212,9 @@ function MealDetailForm() {
       <div className="space-y-3">
         <Label>Macronutriments</Label>
         {[
-          { label: "Glucides", color: "#3B82F6", value: carbsG, setter: setCarbsG },
-          { label: "Protéines", color: "#EF4444", value: proteinG, setter: setProteinG },
-          { label: "Lipides", color: "#F59E0B", value: fatG, setter: setFatG },
+          { label: "Glucides", color: "#A4B465", value: carbsG, setter: setCarbsG },
+          { label: "Protéines", color: "#F5B547", value: proteinG, setter: setProteinG },
+          { label: "Lipides", color: "#1F1F1F", value: fatG, setter: setFatG },
         ].map((macro) => (
           <div
             key={macro.label}
@@ -253,7 +253,7 @@ function MealDetailForm() {
           className={cn(
             "w-full h-12 rounded-xl font-semibold text-base text-white flex items-center justify-center gap-2 transition-opacity active:translate-y-px disabled:opacity-50 disabled:pointer-events-none"
           )}
-          style={{ backgroundColor: "#E8384F" }}
+          style={{ backgroundColor: "#A4B465" }}
         >
           {saving ? (
             <>

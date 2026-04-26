@@ -116,7 +116,7 @@ function ActivityDetailForm() {
               )}
               style={
                 activityType === type.key
-                  ? { backgroundColor: "#E8384F" }
+                  ? { backgroundColor: "#A4B465" }
                   : undefined
               }
             >
@@ -165,7 +165,7 @@ function ActivityDetailForm() {
           className={cn(
             "w-full h-12 rounded-xl font-semibold text-base text-white flex items-center justify-center gap-2 transition-opacity active:translate-y-px disabled:opacity-50 disabled:pointer-events-none"
           )}
-          style={{ backgroundColor: "#E8384F" }}
+          style={{ backgroundColor: "#A4B465" }}
         >
           {saving ? (
             <>

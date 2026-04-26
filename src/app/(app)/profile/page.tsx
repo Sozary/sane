@@ -19,9 +19,9 @@ import { calculateTDEE } from "@/lib/calories/bmr";
 import type { UserProfile, Gender } from "@/types";
 
 const MACROS = [
-  { key: "carbs" as const, label: "Glucides", color: "#3B82F6" },
-  { key: "protein" as const, label: "Protéines", color: "#EF4444" },
-  { key: "fat" as const, label: "Lipides", color: "#F59E0B" },
+  { key: "carbs" as const, label: "Glucides", color: "#A4B465" },
+  { key: "protein" as const, label: "Protéines", color: "#F5B547" },
+  { key: "fat" as const, label: "Lipides", color: "#1F1F1F" },
 ];
 
 const GENDERS: { value: Gender; label: string }[] = [
@@ -196,7 +196,7 @@ export default function ProfilePage() {
       <div className="flex flex-col items-center gap-3 py-4">
         <div
           className="size-20 rounded-full flex items-center justify-center text-2xl font-bold text-white"
-          style={{ backgroundColor: "#E8384F" }}
+          style={{ backgroundColor: "#A4B465" }}
         >
           {initials}
         </div>
@@ -341,7 +341,7 @@ export default function ProfilePage() {
                   )}
                   style={
                     gender === g.value
-                      ? { backgroundColor: "#E8384F" }
+                      ? { backgroundColor: "#A4B465" }
                       : undefined
                   }
                 >
@@ -395,7 +395,7 @@ export default function ProfilePage() {
                 type="button"
                 onClick={handleRecalcConfirm}
                 className="flex-1 h-11 rounded-xl font-medium text-sm text-white"
-                style={{ backgroundColor: "#E8384F" }}
+                style={{ backgroundColor: "#A4B465" }}
               >
                 Oui
               </button>
@@ -412,7 +412,7 @@ export default function ProfilePage() {
         className={cn(
           "w-full h-12 rounded-xl font-semibold text-base text-white flex items-center justify-center gap-2 transition-opacity active:translate-y-px disabled:opacity-50 disabled:pointer-events-none"
         )}
-        style={{ backgroundColor: "#E8384F" }}
+        style={{ backgroundColor: "#A4B465" }}
       >
         {saving ? (
           <>

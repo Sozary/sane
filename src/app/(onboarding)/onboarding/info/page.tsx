@@ -32,7 +32,7 @@ export default function OnboardingInfoPage() {
   return (
     <>
       <div className="flex items-center gap-2 mb-2">
-        <span className="text-[#E8384F] text-xl font-bold">Sane</span>
+        <span className="text-[#A4B465] text-xl font-bold">Sane</span>
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center gap-10">
@@ -58,7 +58,7 @@ export default function OnboardingInfoPage() {
                 )}
                 style={
                   gender === g.value
-                    ? { backgroundColor: "#E8384F" }
+                    ? { backgroundColor: "#A4B465" }
                     : undefined
                 }
               >
@@ -95,7 +95,7 @@ export default function OnboardingInfoPage() {
       <button
         onClick={handleContinue}
         className="w-full h-12 rounded-xl text-white font-semibold text-base"
-        style={{ backgroundColor: "#E8384F" }}
+        style={{ backgroundColor: "#A4B465" }}
       >
         Continuer
       </button>

@@ -140,7 +140,7 @@ function NewMealForm() {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
-          className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm resize-none outline-none focus:ring-2 focus:ring-[#E8384F]/30 focus:border-[#E8384F] transition-colors"
+          className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm resize-none outline-none focus:ring-2 focus:ring-[#A4B465]/30 focus:border-[#A4B465] transition-colors"
         />
         <button
           type="button"
@@ -149,7 +149,7 @@ function NewMealForm() {
           className={cn(
             "w-full h-11 rounded-xl font-medium text-sm text-white flex items-center justify-center gap-2 transition-opacity disabled:opacity-50 disabled:pointer-events-none"
           )}
-          style={{ backgroundColor: "#E8384F" }}
+          style={{ backgroundColor: "#A4B465" }}
         >
           {estimating ? (
             <>
@@ -205,7 +205,7 @@ function NewMealForm() {
               )}
               style={
                 mealType === type.value
-                  ? { backgroundColor: "#E8384F" }
+                  ? { backgroundColor: "#A4B465" }
                   : undefined
               }
             >
@@ -219,7 +219,7 @@ function NewMealForm() {
       <div className="space-y-2">
         <Label htmlFor="calories">Calories</Label>
         <div className="flex items-center gap-3 rounded-xl bg-muted/30 px-4 py-3">
-          <Flame className="size-5" style={{ color: "#E8384F" }} />
+          <Flame className="size-5" style={{ color: "#A4B465" }} />
           <input
             id="calories"
             type="number"
@@ -236,9 +236,9 @@ function NewMealForm() {
       <div className="space-y-3">
         <Label>Macronutriments</Label>
         {[
-          { label: "Glucides", color: "#3B82F6", value: carbsG, setter: setCarbsG },
-          { label: "Protéines", color: "#EF4444", value: proteinG, setter: setProteinG },
-          { label: "Lipides", color: "#F59E0B", value: fatG, setter: setFatG },
+          { label: "Glucides", color: "#A4B465", value: carbsG, setter: setCarbsG },
+          { label: "Protéines", color: "#F5B547", value: proteinG, setter: setProteinG },
+          { label: "Lipides", color: "#1F1F1F", value: fatG, setter: setFatG },
         ].map((macro) => (
           <div
             key={macro.label}
@@ -276,7 +276,7 @@ function NewMealForm() {
         className={cn(
           "w-full h-12 rounded-xl font-semibold text-base text-white flex items-center justify-center gap-2 transition-opacity active:translate-y-px disabled:opacity-50 disabled:pointer-events-none"
         )}
-        style={{ backgroundColor: "#E8384F" }}
+        style={{ backgroundColor: "#A4B465" }}
       >
         {saving ? (
           <>

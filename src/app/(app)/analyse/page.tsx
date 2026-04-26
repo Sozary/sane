@@ -229,7 +229,7 @@ export default function AnalysePage() {
                   ? "text-white border-transparent"
                   : "bg-background text-foreground border-border hover:bg-muted/60"
               )}
-              style={active ? { backgroundColor: "#E8384F" } : undefined}
+              style={active ? { backgroundColor: "#A4B465" } : undefined}
             >
               {p.label}
             </button>
@@ -257,15 +257,15 @@ export default function AnalysePage() {
       <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
         <span>Macros dans la cible&nbsp;:</span>
         <span className="flex items-center gap-1">
-          <span className="size-1.5 rounded-full" style={{ backgroundColor: "#3B82F6" }} />
+          <span className="size-1.5 rounded-full" style={{ backgroundColor: "#A4B465" }} />
           Glucides
         </span>
         <span className="flex items-center gap-1">
-          <span className="size-1.5 rounded-full" style={{ backgroundColor: "#EF4444" }} />
+          <span className="size-1.5 rounded-full" style={{ backgroundColor: "#F5B547" }} />
           Protéines
         </span>
         <span className="flex items-center gap-1">
-          <span className="size-1.5 rounded-full" style={{ backgroundColor: "#F59E0B" }} />
+          <span className="size-1.5 rounded-full" style={{ backgroundColor: "#1F1F1F" }} />
           Lipides
         </span>
       </div>
@@ -288,7 +288,7 @@ export default function AnalysePage() {
               <Link
                 href={`/dashboard?date=${selectedDay}`}
                 className="text-xs font-medium underline underline-offset-4"
-                style={{ color: "#E8384F" }}
+                style={{ color: "#A4B465" }}
               >
                 Voir la journée
               </Link>
@@ -332,19 +332,19 @@ export default function AnalysePage() {
                       label="Glucides"
                       current={selectedDayData.carbsG}
                       goal={monthData.goals.carbsG}
-                      color="#3B82F6"
+                      color="#A4B465"
                     />
                     <MacroBar
                       label="Protéines"
                       current={selectedDayData.proteinG}
                       goal={monthData.goals.proteinG}
-                      color="#EF4444"
+                      color="#F5B547"
                     />
                     <MacroBar
                       label="Lipides"
                       current={selectedDayData.fatG}
                       goal={monthData.goals.fatG}
-                      color="#F59E0B"
+                      color="#1F1F1F"
                     />
                   </div>
                 )}
@@ -383,7 +383,7 @@ export default function AnalysePage() {
             "w-full h-12 rounded-xl font-medium text-white transition-opacity flex items-center justify-center gap-2",
             (!rangeStart || !rangeEnd || analyzing) && "opacity-50"
           )}
-          style={{ backgroundColor: "#E8384F" }}
+          style={{ backgroundColor: "#A4B465" }}
         >
           {analyzing ? (
             <>

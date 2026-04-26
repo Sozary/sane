@@ -7,9 +7,9 @@ import { calculateTDEE, calculateMacroGrams } from "@/lib/calories/bmr";
 import { cn } from "@/lib/utils";
 
 const MACROS = [
-  { key: "carbs", label: "Glucides", color: "#3B82F6" },
-  { key: "protein", label: "Protéines", color: "#EF4444" },
-  { key: "fat", label: "Lipides", color: "#F59E0B" },
+  { key: "carbs", label: "Glucides", color: "#A4B465" },
+  { key: "protein", label: "Protéines", color: "#F5B547" },
+  { key: "fat", label: "Lipides", color: "#1F1F1F" },
 ] as const;
 
 export default function OnboardingGoalsPage() {
@@ -84,7 +84,7 @@ export default function OnboardingGoalsPage() {
   return (
     <>
       <div className="flex items-center gap-2 mb-2">
-        <span className="text-[#E8384F] text-xl font-bold">Sane</span>
+        <span className="text-[#A4B465] text-xl font-bold">Sane</span>
       </div>
 
       <div className="flex-1 flex flex-col gap-8">
@@ -160,7 +160,7 @@ export default function OnboardingGoalsPage() {
           "w-full h-12 rounded-xl font-semibold text-base mt-6",
           totalPct === 100 ? "text-white" : "text-white opacity-80"
         )}
-        style={{ backgroundColor: "#E8384F" }}
+        style={{ backgroundColor: "#A4B465" }}
       >
         {saving ? "Enregistrement..." : "Commencer"}
       </button>

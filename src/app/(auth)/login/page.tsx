@@ -38,7 +38,7 @@ export default function LoginPage() {
   return (
     <>
       <div className="text-center space-y-2">
-        <p className="text-3xl font-bold" style={{ color: "#E8384F" }}>
+        <p className="text-3xl font-bold" style={{ color: "#A4B465" }}>
           Sane
         </p>
         <h1 className="text-2xl font-bold text-foreground">Connexion</h1>
@@ -58,7 +58,7 @@ export default function LoginPage() {
             required
             className={cn(
               "h-12 rounded-xl border border-border",
-              "focus-visible:ring-[#E8384F] focus-visible:border-[#E8384F]"
+              "focus-visible:ring-[#A4B465] focus-visible:border-[#A4B465]"
             )}
           />
         </div>
@@ -76,7 +76,7 @@ export default function LoginPage() {
             required
             className={cn(
               "h-12 rounded-xl border border-border",
-              "focus-visible:ring-[#E8384F] focus-visible:border-[#E8384F]"
+              "focus-visible:ring-[#A4B465] focus-visible:border-[#A4B465]"
             )}
           />
         </div>
@@ -87,7 +87,7 @@ export default function LoginPage() {
           type="submit"
           disabled={loading}
           className="w-full h-12 rounded-xl text-white font-medium"
-          style={{ backgroundColor: "#E8384F" }}
+          style={{ backgroundColor: "#A4B465" }}
         >
           {loading ? "Connexion..." : "Se connecter"}
         </Button>
@@ -95,7 +95,7 @@ export default function LoginPage() {
 
       <p className="text-sm text-center text-muted-foreground">
         Pas encore de compte ?{" "}
-        <Link href="/register" className="font-medium" style={{ color: "#E8384F" }}>
+        <Link href="/register" className="font-medium" style={{ color: "#A4B465" }}>
           S&apos;inscrire
         </Link>
       </p>

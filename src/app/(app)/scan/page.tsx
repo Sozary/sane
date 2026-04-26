@@ -94,9 +94,9 @@ function ScanForm() {
           >
             <div
               className="size-16 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: "rgba(232, 56, 79, 0.1)" }}
+              style={{ backgroundColor: "var(--sane-accent-soft)" }}
             >
-              <Camera className="size-7" style={{ color: "#E8384F" }} />
+              <Camera className="size-7" style={{ color: "#A4B465" }} />
             </div>
             <div className="space-y-1 text-center">
               <p className="text-sm font-medium">
@@ -117,7 +117,7 @@ function ScanForm() {
             <Link
               href={dateParam ? `/meals/new?date=${dateParam}` : "/meals/new"}
               className="text-sm font-medium underline-offset-4 hover:underline"
-              style={{ color: "#E8384F" }}
+              style={{ color: "#A4B465" }}
             >
               Ou entrer manuellement
             </Link>
@@ -158,7 +158,7 @@ function ScanForm() {
                     className={cn(
                       "w-full h-11 rounded-xl font-medium text-sm text-white flex items-center justify-center gap-2"
                     )}
-                    style={{ backgroundColor: "#E8384F" }}
+                    style={{ backgroundColor: "#A4B465" }}
                   >
                     <RotateCcw className="size-4" />
                     Reprendre une photo
@@ -192,7 +192,7 @@ function ScanForm() {
                 className={cn(
                   "flex-1 h-12 rounded-lg font-medium text-sm text-white flex items-center justify-center gap-2 transition-opacity active:translate-y-px"
                 )}
-                style={{ backgroundColor: "#E8384F" }}
+                style={{ backgroundColor: "#A4B465" }}
               >
                 <Camera className="size-4" />
                 Analyser

@@ -8,7 +8,7 @@ export default function SuccesPage() {
       <div className="flex flex-col items-center text-center pt-8 gap-4">
         <div
           className="size-20 rounded-full flex items-center justify-center text-white shadow-lg"
-          style={{ backgroundColor: "#E8384F" }}
+          style={{ backgroundColor: "#A4B465" }}
         >
           <Trophy className="size-10" />
         </div>

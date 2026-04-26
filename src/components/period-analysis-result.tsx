@@ -72,7 +72,7 @@ export function PeriodAnalysisResult({ data }: PeriodAnalysisResultProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Lightbulb className="size-4" style={{ color: "#E8384F" }} />
+              <Lightbulb className="size-4" style={{ color: "#A4B465" }} />
               Conseils
             </CardTitle>
           </CardHeader>
@@ -80,7 +80,7 @@ export function PeriodAnalysisResult({ data }: PeriodAnalysisResultProps) {
             <ul className="space-y-2 text-sm">
               {data.advice.map((item, i) => (
                 <li key={i} className="flex gap-2">
-                  <span style={{ color: "#E8384F" }} className="mt-0.5">•</span>
+                  <span style={{ color: "#A4B465" }} className="mt-0.5">•</span>
                   <span className="leading-relaxed">{item}</span>
                 </li>
               ))}

@@ -3,7 +3,7 @@ import { NotificationPrompt } from "@/components/notification-prompt";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-dvh flex flex-col bg-background pb-20">
+    <div className="min-h-dvh flex flex-col bg-background">
       <main className="flex-1 max-w-md mx-auto w-full">
         {children}
       </main>
