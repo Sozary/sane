@@ -8,11 +8,11 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 const leftItems: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/dashboard", label: "Journal", icon: BookOpen },
-  { href: "/succes", label: "Challenges", icon: Trophy },
+  { href: "/analyse", label: "Analyse", icon: BarChart3 },
 ];
 
 const rightItems: { href: string; label: string; icon: LucideIcon }[] = [
-  { href: "/analyse", label: "Analyse", icon: BarChart3 },
+  { href: "/succes", label: "Challenges", icon: Trophy },
   { href: "/profile", label: "Profil", icon: User },
 ];
 

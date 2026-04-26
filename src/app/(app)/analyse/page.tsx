@@ -184,9 +184,6 @@ export default function AnalysePage() {
   return (
     <div className="px-4 py-6 pb-28 space-y-6">
       <Card className="animate-in fade-in slide-in-from-bottom-3 duration-500">
-        <CardHeader className="pb-1">
-          <CardTitle>Analyse</CardTitle>
-        </CardHeader>
         <CardContent className="space-y-5">
           <div className="flex items-center justify-between">
             <button
@@ -322,7 +319,7 @@ export default function AnalysePage() {
                         {Math.round(
                           (selectedDayData.caloriesConsumed /
                             monthData.goals.calorieGoal) *
-                            100
+                          100
                         )}
                         %
                       </div>
@@ -368,51 +365,51 @@ export default function AnalysePage() {
       {/* Range summary + Analyze button */}
       <Card className="animate-in fade-in slide-in-from-bottom-3 duration-500 delay-100 fill-mode-backwards">
         <CardContent className="space-y-3 pt-1">
-        <div className="text-sm text-muted-foreground text-center">
-          {rangeStart && rangeEnd ? (
-            <>
-              Période&nbsp;:{" "}
-              <span className="font-medium text-foreground">
-                {formatDayShortFr(rangeStart)} → {formatDayShortFr(rangeEnd)}
-              </span>{" "}
-              ({rangeDays} {rangeDays > 1 ? "jours" : "jour"})
-            </>
-          ) : preset === "custom" ? (
-            "Sélectionne un jour de début puis un jour de fin sur le calendrier."
-          ) : (
-            "Choisis une période."
-          )}
-        </div>
+          <div className="text-sm text-muted-foreground text-center">
+            {rangeStart && rangeEnd ? (
+              <>
+                Période&nbsp;:{" "}
+                <span className="font-medium text-foreground">
+                  {formatDayShortFr(rangeStart)} → {formatDayShortFr(rangeEnd)}
+                </span>{" "}
+                ({rangeDays} {rangeDays > 1 ? "jours" : "jour"})
+              </>
+            ) : preset === "custom" ? (
+              "Sélectionne un jour de début puis un jour de fin sur le calendrier."
+            ) : (
+              "Choisis une période."
+            )}
+          </div>
 
-        <button
-          onClick={handleAnalyze}
-          disabled={!rangeStart || !rangeEnd || analyzing}
-          className={cn(
-            "w-full h-12 rounded-xl font-medium text-white transition-opacity flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed",
-            (!rangeStart || !rangeEnd || analyzing) && "opacity-50"
-          )}
-          style={{ backgroundColor: "#A4B465" }}
-        >
-          {analyzing ? (
-            <>
-              <Loader2 className="size-4 animate-spin" />
-              Analyse en cours…
-            </>
-          ) : (
-            <>
-              <Sparkles className="size-4" />
-              Analyser cette période
-            </>
-          )}
-        </button>
+          <button
+            onClick={handleAnalyze}
+            disabled={!rangeStart || !rangeEnd || analyzing}
+            className={cn(
+              "w-full h-12 rounded-xl font-medium text-white transition-opacity flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed",
+              (!rangeStart || !rangeEnd || analyzing) && "opacity-50"
+            )}
+            style={{ backgroundColor: "#A4B465" }}
+          >
+            {analyzing ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Analyse en cours…
+              </>
+            ) : (
+              <>
+                <Sparkles className="size-4" />
+                Analyser cette période
+              </>
+            )}
+          </button>
 
-        {analysisError && (
-          <p className="text-sm text-destructive text-center">
-            {analysisError === "analysis_failed"
-              ? "L'analyse a échoué. Réessaie dans un instant."
-              : analysisError}
-          </p>
-        )}
+          {analysisError && (
+            <p className="text-sm text-destructive text-center">
+              {analysisError === "analysis_failed"
+                ? "L'analyse a échoué. Réessaie dans un instant."
+                : analysisError}
+            </p>
+          )}
         </CardContent>
       </Card>
 
