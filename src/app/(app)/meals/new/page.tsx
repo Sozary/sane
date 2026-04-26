@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Flame, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScoreBadge } from "@/components/score-badge";
@@ -273,9 +274,14 @@ function NewMealForm() {
 
       {/* Score badge */}
       {score !== null && (
-        <div className="flex justify-center py-2">
-          <ScoreBadge score={score} size="lg" />
-        </div>
+        <Card>
+          <CardContent className="flex flex-col items-center gap-2 py-2">
+            <ScoreBadge score={score} size="lg" />
+            <p className="text-xs text-muted-foreground text-center">
+              Score nutrition estimé pour ce repas
+            </p>
+          </CardContent>
+        </Card>
       )}
 
       {/* Save button */}

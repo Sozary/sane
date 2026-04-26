@@ -9,6 +9,7 @@ interface CalorieRingProps {
   size?: number;
   strokeWidth?: number;
   color?: string;
+  overflowColor?: string;
   trackColor?: string;
   className?: string;
   showTipDot?: boolean;
@@ -22,6 +23,7 @@ export function CalorieRing({
   size = 200,
   strokeWidth = 6,
   color = "#A4B465",
+  overflowColor = "#E8384F",
   trackColor = "rgba(0,0,0,0.05)",
   className,
   showTipDot = true,
@@ -29,8 +31,10 @@ export function CalorieRing({
   children,
 }: CalorieRingProps) {
   const radius = (size - strokeWidth) / 2;
+  const overflowRadius = radius + strokeWidth + 4;
   const circumference = 2 * Math.PI * radius;
-  const targetValue = max > 0 ? Math.min(value, max) : 0;
+  const overflowCircumference = 2 * Math.PI * overflowRadius;
+  const targetValue = Math.max(value, 0);
   const [animatedValue, setAnimatedValue] = useState(0);
   const previousValueRef = useRef(0);
 
@@ -66,17 +70,20 @@ export function CalorieRing({
     return () => window.cancelAnimationFrame(frameId);
   }, [loading, targetValue]);
 
-  const progress = max > 0 ? Math.min(animatedValue / max, 1) : 0;
-  const strokeDashoffset = circumference * (1 - progress);
+  const normalProgress = max > 0 ? Math.min(animatedValue / max, 1) : 0;
+  const overflowProgress = max > 0 ? Math.min(Math.max(animatedValue - max, 0) / max, 1) : 0;
+  const strokeDashoffset = circumference * (1 - normalProgress);
+  const overflowDashoffset = overflowCircumference * (1 - overflowProgress);
   const center = size / 2;
 
   // Tip-dot at the END of the progress arc.
-  // The SVG is rotated -90° via CSS, so a point at SVG (cx + r·cosθ, cy + r·sinθ)
-  // visually appears at the position the arc reaches after sweeping θ clockwise from 12 o'clock.
   const dotR = strokeWidth * 0.7;
-  const dotAngle = progress * 2 * Math.PI;
+  const dotAngle = normalProgress * 2 * Math.PI;
   const dotCx = center + radius * Math.cos(dotAngle);
   const dotCy = center + radius * Math.sin(dotAngle);
+  const overflowDotAngle = overflowProgress * 2 * Math.PI;
+  const overflowDotCx = center + overflowRadius * Math.cos(overflowDotAngle);
+  const overflowDotCy = center + overflowRadius * Math.sin(overflowDotAngle);
 
   return (
     <div
@@ -154,6 +161,37 @@ export function CalorieRing({
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
         />
+        {overflowProgress > 0 ? (
+          <>
+            <circle
+              cx={center}
+              cy={center}
+              r={overflowRadius}
+              fill="none"
+              stroke="rgba(232,56,79,0.12)"
+              strokeWidth={strokeWidth}
+            />
+            <circle
+              cx={center}
+              cy={center}
+              r={overflowRadius}
+              fill="none"
+              stroke={overflowColor}
+              strokeWidth={strokeWidth}
+              strokeLinecap="round"
+              strokeDasharray={overflowCircumference}
+              strokeDashoffset={overflowDashoffset}
+            />
+            {showTipDot ? (
+              <circle
+                cx={overflowDotCx}
+                cy={overflowDotCy}
+                r={dotR}
+                fill={overflowColor}
+              />
+            ) : null}
+          </>
+        ) : null}
         {showTipDot ? (
           <circle
             cx={dotCx}
@@ -161,7 +199,7 @@ export function CalorieRing({
             r={dotR}
             fill={color}
             style={{
-              opacity: progress > 0 ? 1 : 0,
+              opacity: normalProgress > 0 ? 1 : 0,
             }}
           />
         ) : null}

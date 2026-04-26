@@ -61,6 +61,7 @@ function formatDateKey(d: Date) {
 
 export function DateNavigator({ date, onDateChange, className, dayDots }: DateNavigatorProps) {
   const today = new Date();
+  const isOnToday = isSameDay(date, today);
   const [weekAnchor, setWeekAnchor] = useState<Date>(() => startOfWeekMonday(date));
   const [direction, setDirection] = useState<1 | -1>(1);
   const pointerStart = useRef<{ x: number; y: number } | null>(null);
@@ -114,121 +115,134 @@ export function DateNavigator({ date, onDateChange, className, dayDots }: DateNa
   };
 
   return (
-    <div
-      className={cn("flex items-stretch gap-1 select-none", className)}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerCancel={() => {
-        pointerStart.current = null;
-        dragged.current = false;
-      }}
-    >
-      <button
-        type="button"
-        onClick={() => shiftWeek(-1)}
-        aria-label="Semaine précédente"
-        className="shrink-0 flex items-center justify-center w-7 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+    <div className={cn("space-y-2 select-none", className)}>
+      <div
+        className="flex items-stretch gap-1"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={() => {
+          pointerStart.current = null;
+          dragged.current = false;
+        }}
       >
-        <ChevronLeft className="size-4" />
-      </button>
+        <button
+          type="button"
+          onClick={() => shiftWeek(-1)}
+          aria-label="Semaine précédente"
+          className="shrink-0 flex items-center justify-center w-7 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+        >
+          <ChevronLeft className="size-4" />
+        </button>
 
-      <div className="flex-1 overflow-hidden">
-        <div
-          key={weekAnchor.getTime()}
+        <div className="flex-1 overflow-hidden">
+          <div
+            key={weekAnchor.getTime()}
+            className={cn(
+              "flex items-stretch gap-1 animate-in fade-in duration-300",
+              direction === 1 ? "slide-in-from-right-6" : "slide-in-from-left-6",
+            )}
+          >
+            {days.map((d) => {
+              const selected = isSameDay(d, date);
+              const isToday = isSameDay(d, today);
+              const isFuture = d.getTime() > today.getTime() && !isToday;
+              const labelIdx = (d.getDay() + 6) % 7;
+              const dayLabel = DAY_LABELS_FR[labelIdx];
+
+              const dotInfo = dayDots?.[formatDateKey(d)];
+              const dots: { color: string; on: boolean }[] = [
+                { color: "var(--sane-carbs)", on: !!dotInfo?.carbsHit },
+                { color: "var(--sane-protein)", on: !!dotInfo?.proteinHit },
+                { color: "var(--sane-fat)", on: !!dotInfo?.fatHit },
+              ];
+
+              return (
+                <button
+                  key={d.toISOString()}
+                  type="button"
+                  onClick={() => {
+                    if (dragged.current) return;
+                    if (!isFuture) onDateChange(d);
+                  }}
+                  disabled={isFuture}
+                  className={cn(
+                    "flex-1 flex flex-col items-center justify-center rounded-full py-2.5 transition-colors gap-0.5",
+                    selected ? "text-white" : "text-foreground hover:bg-black/5",
+                    isFuture ? "opacity-30 cursor-not-allowed" : "cursor-pointer",
+                  )}
+                  style={
+                    selected ? { backgroundColor: "var(--sane-accent)" } : undefined
+                  }
+                >
+                  <span
+                    className={cn(
+                      "text-[11px] font-medium leading-tight",
+                      selected ? "text-white/90" : "text-muted-foreground",
+                    )}
+                  >
+                    {selected && isToday ? "Auj." : dayLabel}
+                  </span>
+                  <span
+                    className={cn(
+                      "text-[10px] leading-tight",
+                      selected ? "text-white/80" : "invisible",
+                    )}
+                    aria-hidden={!selected}
+                  >
+                    {selected ? MONTH_LABELS_FR[d.getMonth()] : "Mois"}
+                  </span>
+                  <span className="text-base font-semibold tabular-nums leading-tight">
+                    {d.getDate()}
+                  </span>
+                  <div className="flex gap-0.5 mt-0.5">
+                    {dots.map((dot, i) => (
+                      <span
+                        key={i}
+                        className="block size-1 rounded-full transition-opacity"
+                        style={{
+                          backgroundColor: dot.on
+                            ? selected
+                              ? "rgba(255,255,255,0.9)"
+                              : dot.color
+                            : selected
+                              ? "rgba(255,255,255,0.25)"
+                              : "rgba(0,0,0,0.08)",
+                        }}
+                      />
+                    ))}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => canGoNext && shiftWeek(1)}
+          disabled={!canGoNext}
+          aria-label="Semaine suivante"
           className={cn(
-            "flex items-stretch gap-1 animate-in fade-in duration-300",
-            direction === 1 ? "slide-in-from-right-6" : "slide-in-from-left-6",
+            "shrink-0 flex items-center justify-center w-7 text-muted-foreground transition-colors",
+            canGoNext ? "hover:text-foreground cursor-pointer" : "opacity-30 cursor-not-allowed",
           )}
         >
-          {days.map((d) => {
-            const selected = isSameDay(d, date);
-            const isToday = isSameDay(d, today);
-            const isFuture = d.getTime() > today.getTime() && !isToday;
-            // Map JS day (0=Sun..6=Sat) to Monday-first label index ((day+6)%7)
-            const labelIdx = (d.getDay() + 6) % 7;
-            const dayLabel = DAY_LABELS_FR[labelIdx];
-
-            const dotInfo = dayDots?.[formatDateKey(d)];
-            const dots: { color: string; on: boolean }[] = [
-              { color: "var(--sane-carbs)", on: !!dotInfo?.carbsHit },
-              { color: "var(--sane-protein)", on: !!dotInfo?.proteinHit },
-              { color: "var(--sane-fat)", on: !!dotInfo?.fatHit },
-            ];
-
-            return (
-              <button
-                key={d.toISOString()}
-                type="button"
-                onClick={() => {
-                  if (dragged.current) return;
-                  if (!isFuture) onDateChange(d);
-                }}
-                disabled={isFuture}
-                className={cn(
-                  "flex-1 flex flex-col items-center justify-center rounded-full py-2.5 transition-colors gap-0.5",
-                  selected ? "text-white" : "text-foreground hover:bg-black/5",
-                  isFuture ? "opacity-30 cursor-not-allowed" : "cursor-pointer",
-                )}
-                style={
-                  selected ? { backgroundColor: "var(--sane-accent)" } : undefined
-                }
-              >
-                <span
-                  className={cn(
-                    "text-[11px] font-medium leading-tight",
-                    selected ? "text-white/90" : "text-muted-foreground",
-                  )}
-                >
-                  {selected && isToday ? "Auj." : dayLabel}
-                </span>
-                <span
-                  className={cn(
-                    "text-[10px] leading-tight",
-                    selected ? "text-white/80" : "invisible",
-                  )}
-                  aria-hidden={!selected}
-                >
-                  {selected ? MONTH_LABELS_FR[d.getMonth()] : "Mois"}
-                </span>
-                <span className="text-base font-semibold tabular-nums leading-tight">
-                  {d.getDate()}
-                </span>
-                <div className="flex gap-0.5 mt-0.5">
-                  {dots.map((dot, i) => (
-                    <span
-                      key={i}
-                      className="block size-1 rounded-full transition-opacity"
-                      style={{
-                        backgroundColor: dot.on
-                          ? selected
-                            ? "rgba(255,255,255,0.9)"
-                            : dot.color
-                          : selected
-                            ? "rgba(255,255,255,0.25)"
-                            : "rgba(0,0,0,0.08)",
-                      }}
-                    />
-                  ))}
-                </div>
-              </button>
-            );
-          })}
-        </div>
+          <ChevronRight className="size-4" />
+        </button>
       </div>
 
-      <button
-        type="button"
-        onClick={() => canGoNext && shiftWeek(1)}
-        disabled={!canGoNext}
-        aria-label="Semaine suivante"
-        className={cn(
-          "shrink-0 flex items-center justify-center w-7 text-muted-foreground transition-colors",
-          canGoNext ? "hover:text-foreground cursor-pointer" : "opacity-30 cursor-not-allowed",
-        )}
-      >
-        <ChevronRight className="size-4" />
-      </button>
+      {!isOnToday ? (
+        <div className="flex justify-center">
+          <button
+            type="button"
+            onClick={() => onDateChange(today)}
+            className="h-8 px-3 rounded-full bg-card text-xs font-medium text-muted-foreground shadow-sm hover:text-foreground transition-colors"
+          >
+            Aujourd&apos;hui
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

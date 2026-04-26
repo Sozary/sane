@@ -9,11 +9,44 @@ interface ScoreBadgeProps {
 }
 
 function getScoreConfig(score: number) {
-  if (score >= 80) return { label: "Excellent !", color: "#22c55e" };
-  if (score >= 60) return { label: "Très bien", color: "#4ade80" };
-  if (score >= 40) return { label: "Bon", color: "#facc15" };
-  if (score >= 20) return { label: "Moyen", color: "#f97316" };
-  return { label: "À améliorer", color: "#ef4444" };
+  if (score >= 80) {
+    return {
+      label: "Excellent !",
+      color: "var(--sane-accent)",
+      textColor: "var(--sane-accent)",
+      bgColor: "var(--sane-accent-soft)",
+    };
+  }
+  if (score >= 60) {
+    return {
+      label: "Très bien",
+      color: "#D8C36A",
+      textColor: "#A0882A",
+      bgColor: "#F6EFCB",
+    };
+  }
+  if (score >= 40) {
+    return {
+      label: "Bon",
+      color: "#E7A45A",
+      textColor: "#B66E24",
+      bgColor: "#F9E2C8",
+    };
+  }
+  if (score >= 20) {
+    return {
+      label: "Moyen",
+      color: "#E57D63",
+      textColor: "#C45134",
+      bgColor: "#F7D8D0",
+    };
+  }
+  return {
+    label: "À améliorer",
+    color: "var(--sane-burn)",
+    textColor: "var(--sane-burn)",
+    bgColor: "var(--sane-burn-soft)",
+  };
 }
 
 const sizes = {
@@ -30,14 +63,18 @@ export function ScoreBadge({ score, size = "md", className }: ScoreBadgeProps) {
     <div className={cn("flex flex-col items-center gap-1", className)}>
       <div
         className={cn(
-          "rounded-full flex items-center justify-center font-bold text-white",
+          "rounded-full flex items-center justify-center font-bold shadow-sm",
           s.outer
         )}
-        style={{ backgroundColor: config.color }}
+        style={{
+          backgroundColor: config.bgColor,
+          color: config.textColor,
+          boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.04)",
+        }}
       >
         <span className={s.text}>{score}</span>
       </div>
-      <span className={cn("font-medium", s.label)} style={{ color: config.color }}>
+      <span className={cn("font-medium", s.label)} style={{ color: config.textColor }}>
         {config.label}
       </span>
     </div>

@@ -2,8 +2,9 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
-import { ArrowLeft, Flame, Heart, Loader2, Trash2 } from "lucide-react";
+import { ArrowLeft, Flame, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScoreBadge } from "@/components/score-badge";
@@ -34,7 +35,6 @@ function MealDetailForm() {
   const [fatG, setFatG] = useState("");
   const [score, setScore] = useState<number | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -52,7 +52,6 @@ function MealDetailForm() {
         setFatG(String(meal.fatG));
         setScore(meal.score);
         setImageUrl(meal.imageUrl);
-        setIsFavorite(meal.isFavorite);
       } catch {
         // error handling
       } finally {
@@ -76,7 +75,6 @@ function MealDetailForm() {
           carbsG: Number(carbsG) || 0,
           proteinG: Number(proteinG) || 0,
           fatG: Number(fatG) || 0,
-          isFavorite,
         }),
       });
       if (res.ok) router.push(dashboardUrl);
@@ -99,8 +97,6 @@ function MealDetailForm() {
     }
   };
 
-  const toggleFavorite = () => setIsFavorite((prev) => !prev);
-
   if (loading) {
     return (
       <div className="px-4 py-6 space-y-6">
@@ -122,25 +118,13 @@ function MealDetailForm() {
   return (
     <div className="px-4 py-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link href={dashboardUrl}>
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="size-5" />
-            </Button>
-          </Link>
-          <h1 className="text-xl font-bold">Détail du repas</h1>
-        </div>
-        <button
-          type="button"
-          onClick={toggleFavorite}
-          className="p-2 rounded-lg transition-colors hover:bg-muted"
-        >
-          <Heart
-            className={cn("size-5", isFavorite && "fill-current")}
-            style={{ color: "#A4B465" }}
-          />
-        </button>
+      <div className="flex items-center gap-3">
+        <Link href={dashboardUrl}>
+          <Button variant="ghost" size="icon">
+            <ArrowLeft className="size-5" />
+          </Button>
+        </Link>
+        <h1 className="text-xl font-bold">Détail du repas</h1>
       </div>
 
       {/* Meal image */}
@@ -239,9 +223,14 @@ function MealDetailForm() {
 
       {/* Score badge */}
       {score !== null && (
-        <div className="flex justify-center py-2">
-          <ScoreBadge score={score} size="lg" />
-        </div>
+        <Card>
+          <CardContent className="flex flex-col items-center gap-2 py-2">
+            <ScoreBadge score={score} size="lg" />
+            <p className="text-xs text-muted-foreground text-center">
+              Score nutrition estimé pour ce repas
+            </p>
+          </CardContent>
+        </Card>
       )}
 
       {/* Action buttons */}

@@ -25,17 +25,21 @@ export function SummaryCard({
   macroGoals,
   loading,
 }: SummaryCardProps) {
-  const remaining = Math.max(0, calorieGoal - caloriesConsumed + caloriesBurned);
+  const netCalories = Math.max(0, caloriesConsumed - caloriesBurned);
+  const remaining = Math.max(0, calorieGoal - netCalories);
+  const surplus = Math.max(0, netCalories - calorieGoal);
+  const isOverGoal = surplus > 0;
 
   return (
     <div className="rounded-3xl bg-card p-5 shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <CalorieRing
-          value={caloriesConsumed}
+          value={netCalories}
           max={calorieGoal}
           size={150}
           strokeWidth={4}
           color="var(--sane-accent)"
+          overflowColor="var(--sane-burn)"
           loading={loading}
         >
           {loading ? (
@@ -45,11 +49,17 @@ export function SummaryCard({
             </>
           ) : (
             <>
-              <span className="text-3xl font-bold tabular-nums leading-none tracking-tight">
-                {remaining.toLocaleString("fr-FR")}
+              <span
+                className="text-3xl font-bold tabular-nums leading-none tracking-tight"
+                style={isOverGoal ? { color: "var(--sane-burn)" } : undefined}
+              >
+                {(isOverGoal ? surplus : remaining).toLocaleString("fr-FR")}
               </span>
-              <span className="text-[11px] text-muted-foreground mt-1.5">
-                kcal restantes
+              <span
+                className="text-[11px] mt-1.5"
+                style={isOverGoal ? { color: "var(--sane-burn)" } : undefined}
+              >
+                {isOverGoal ? "Surplus calorique" : "kcal restantes"}
               </span>
             </>
           )}
