@@ -6,6 +6,7 @@ import { SummaryCard } from "@/components/summary-card";
 import { MealGroupCard } from "@/components/meal-group-card";
 import { ActivityGroupCard } from "@/components/activity-group-card";
 import { DateNavigator, type DateNavigatorDayDots } from "@/components/date-navigator";
+import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import type { Meal, Activity } from "@/types";
 
@@ -68,11 +69,13 @@ function DashboardContent() {
   const [loading, setLoading] = useState(true);
   const [monthDays, setMonthDays] = useState<Record<string, MonthDayAggregate>>({});
   const [fetchedMonths, setFetchedMonths] = useState<Set<string>>(new Set());
+  const [contentDirection, setContentDirection] = useState<1 | -1>(1);
 
   const dateStr = formatDate(date);
 
   const handleDateChange = useCallback(
     (newDate: Date) => {
+      setContentDirection(newDate.getTime() >= date.getTime() ? 1 : -1);
       setDate(newDate);
       setLoading(true);
       const newDateStr = formatDate(newDate);
@@ -83,7 +86,7 @@ function DashboardContent() {
         router.replace(`/dashboard?date=${newDateStr}`, { scroll: false });
       }
     },
-    [router],
+    [date, router],
   );
 
   useEffect(() => {
@@ -209,45 +212,58 @@ function DashboardContent() {
         <DateNavigator date={date} onDateChange={handleDateChange} dayDots={dayDots} />
       </div>
 
-      <div className="animate-in fade-in slide-in-from-bottom-3 duration-500 delay-100 fill-mode-backwards">
-        <SummaryCard
-          caloriesConsumed={displayData.caloriesConsumed}
-          caloriesBurned={displayData.caloriesBurned}
-          calorieGoal={displayData.calorieGoal}
-          carbsG={displayData.carbsG}
-          proteinG={displayData.proteinG}
-          fatG={displayData.fatG}
-          macroGoals={displayData.macroGoals}
-          loading={loading}
-        />
-      </div>
+      <div className="overflow-x-hidden">
+        <div
+          key={dateStr}
+          className={cn(
+            "space-y-5 animate-in fade-in duration-400",
+            contentDirection === 1 ? "slide-in-from-right-16" : "slide-in-from-left-16",
+          )}
+        >
+          <div>
+            <SummaryCard
+              caloriesConsumed={displayData.caloriesConsumed}
+              caloriesBurned={displayData.caloriesBurned}
+              calorieGoal={displayData.calorieGoal}
+              carbsG={displayData.carbsG}
+              proteinG={displayData.proteinG}
+              fatG={displayData.fatG}
+              macroGoals={displayData.macroGoals}
+              loading={loading}
+            />
+          </div>
 
-      <div className="space-y-3 animate-in fade-in slide-in-from-bottom-3 duration-500 delay-200 fill-mode-backwards">
-        <h2 className="font-bold text-lg">Repas</h2>
-        <div className="-mx-4 px-4 overflow-x-auto no-scrollbar snap-x snap-mandatory">
-          <div className="flex gap-3 pb-1">
-            {MEAL_TYPES.map((m) => (
-              <div key={m.type} className="snap-start shrink-0 w-[88%]">
-                <MealGroupCard
-                  mealType={m.type}
-                  label={m.label}
-                  meals={mealsByType[m.type] ?? []}
-                  goalCalories={Math.round(displayData.calorieGoal * m.ratio)}
-                  date={dateStr}
-                />
+          <div className="space-y-3">
+            <h2 className="font-bold text-lg">Repas</h2>
+            <div
+              className="-mx-4 overflow-x-auto no-scrollbar snap-x snap-mandatory"
+              style={{ scrollPaddingLeft: "1rem", scrollPaddingRight: "1rem" }}
+            >
+              <div className="flex gap-3 px-4 pb-1">
+                {MEAL_TYPES.map((m) => (
+                  <div key={m.type} className="snap-start shrink-0 w-[88%]">
+                    <MealGroupCard
+                      mealType={m.type}
+                      label={m.label}
+                      meals={mealsByType[m.type] ?? []}
+                      goalCalories={Math.round(displayData.calorieGoal * m.ratio)}
+                      date={dateStr}
+                    />
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <h2 className="font-bold text-lg">Activités</h2>
+            <ActivityGroupCard
+              activities={displayData.activities}
+              goalBurn={0}
+              date={dateStr}
+            />
           </div>
         </div>
-      </div>
-
-      <div className="space-y-3 animate-in fade-in slide-in-from-bottom-3 duration-500 delay-300 fill-mode-backwards">
-        <h2 className="font-bold text-lg">Activités</h2>
-        <ActivityGroupCard
-          activities={displayData.activities}
-          goalBurn={0}
-          date={dateStr}
-        />
       </div>
     </div>
   );

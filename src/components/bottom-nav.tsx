@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { BookOpen, Trophy, Plus, BarChart3, User, type LucideIcon } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 const leftItems: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/dashboard", label: "Journal", icon: BookOpen },
@@ -20,6 +20,7 @@ const BAR_HEIGHT = 64;
 const NOTCH_RADIUS = 30;
 const SHOULDER = 10;
 const CORNER_RADIUS = 24;
+
 
 function buildPath(width: number) {
   const cx = width / 2;
@@ -43,9 +44,17 @@ function buildPath(width: number) {
 }
 
 export function BottomNav() {
+  const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const isScan = pathname.startsWith("/scan");
+  const dateParam = searchParams.get("date");
+  const scanUrl = dateParam ? `/scan?date=${dateParam}` : "/scan";
+  const dashboardUrl = dateParam ? `/dashboard?date=${dateParam}` : "/dashboard";
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(360);
+  const [scanButtonActive, setScanButtonActive] = useState(isScan);
+  const navigationTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -56,6 +65,33 @@ export function BottomNav() {
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    setScanButtonActive(isScan);
+  }, [isScan]);
+
+  useEffect(() => {
+    return () => {
+      if (navigationTimeoutRef.current !== null) {
+        window.clearTimeout(navigationTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleScanClick = () => {
+    if (navigationTimeoutRef.current !== null) {
+      window.clearTimeout(navigationTimeoutRef.current);
+    }
+
+    const nextActive = !isScan;
+    const nextUrl = isScan ? dashboardUrl : scanUrl;
+    setScanButtonActive(nextActive);
+
+    navigationTimeoutRef.current = window.setTimeout(() => {
+      router.push(nextUrl);
+      navigationTimeoutRef.current = null;
+    }, 150);
+  };
 
   return (
     <nav className="fixed bottom-3 inset-x-3 z-50 mx-auto max-w-md">
@@ -93,17 +129,24 @@ export function BottomNav() {
           </div>
         </div>
 
-        <Link
-          href="/scan"
+        <button
+          type="button"
+          onClick={handleScanClick}
           aria-label="Ajouter"
-          className="absolute left-1/2 -translate-x-1/2 size-12 rounded-full flex items-center justify-center text-white shadow-lg"
+          aria-pressed={scanButtonActive}
+          className="cursor-pointer absolute left-1/2 -translate-x-1/2 size-12 rounded-full flex items-center justify-center text-white shadow-lg transition-transform duration-200 active:scale-95"
           style={{
             backgroundColor: "var(--sane-plus)",
             top: SHOULDER - 24,
           }}
         >
-          <Plus className="size-6" />
-        </Link>
+          <Plus
+            className={cn(
+              "size-6 transition-transform duration-300 ease-out",
+              scanButtonActive && "rotate-45",
+            )}
+          />
+        </button>
       </div>
     </nav>
   );

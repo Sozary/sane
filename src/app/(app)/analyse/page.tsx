@@ -71,6 +71,7 @@ export default function AnalysePage() {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<PeriodAnalysisData | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const currentMonthKey = `${monthCursor.getFullYear()}-${pad2(monthCursor.getMonth() + 1)}`;
 
   // Apply preset-based range
   useEffect(() => {
@@ -95,9 +96,9 @@ export default function AnalysePage() {
     let cancelled = false;
     async function fetchMonth() {
       setLoadingMonth(true);
+      setMonthData(null);
       try {
-        const m = `${monthCursor.getFullYear()}-${pad2(monthCursor.getMonth() + 1)}`;
-        const res = await fetch(`/api/daily-log/month?month=${m}`);
+        const res = await fetch(`/api/daily-log/month?month=${currentMonthKey}`);
         if (res.ok) {
           const json = (await res.json()) as MonthPayload;
           if (!cancelled) setMonthData(json);
@@ -112,7 +113,7 @@ export default function AnalysePage() {
     return () => {
       cancelled = true;
     };
-  }, [monthCursor]);
+  }, [currentMonthKey]);
 
   const prevMonth = useCallback(() => {
     setMonthCursor((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1));
@@ -178,14 +179,16 @@ export default function AnalysePage() {
 
   const rangeDays =
     rangeStart && rangeEnd ? daysBetweenInclusive(rangeStart, rangeEnd) : 0;
+  const monthReady = !loadingMonth && monthData?.month === currentMonthKey;
 
   return (
-    <div className="px-4 py-6 space-y-6">
+    <div className="px-4 py-6 pb-28 space-y-6">
       {/* Month navigator */}
       <div className="flex items-center justify-between">
         <button
           onClick={prevMonth}
-          className="p-2 rounded-full hover:bg-muted/50 transition-colors"
+          className="cursor-pointer p-2 rounded-full hover:bg-muted/50 transition-colors"
+          style={{ cursor: "pointer" }}
           aria-label="Mois précédent"
         >
           <ChevronLeft className="size-5" />
@@ -195,7 +198,8 @@ export default function AnalysePage() {
         </span>
         <button
           onClick={nextMonth}
-          className="p-2 rounded-full hover:bg-muted/50 transition-colors"
+          className="cursor-pointer p-2 rounded-full hover:bg-muted/50 transition-colors"
+          style={{ cursor: "pointer" }}
           aria-label="Mois suivant"
         >
           <ChevronRight className="size-5" />
@@ -224,7 +228,7 @@ export default function AnalysePage() {
                 }
               }}
               className={cn(
-                "shrink-0 px-3 h-8 rounded-full text-xs font-medium border transition-colors",
+                "shrink-0 px-3 h-8 rounded-full text-xs font-medium border transition-colors cursor-pointer",
                 active
                   ? "text-white border-transparent"
                   : "bg-background text-foreground border-border hover:bg-muted/60"
@@ -238,7 +242,7 @@ export default function AnalysePage() {
       </div>
 
       {/* Calendar */}
-      {loadingMonth && !monthData ? (
+      {!monthReady ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="size-6 animate-spin text-muted-foreground" />
         </div>
@@ -380,7 +384,7 @@ export default function AnalysePage() {
           onClick={handleAnalyze}
           disabled={!rangeStart || !rangeEnd || analyzing}
           className={cn(
-            "w-full h-12 rounded-xl font-medium text-white transition-opacity flex items-center justify-center gap-2",
+            "w-full h-12 rounded-xl font-medium text-white transition-opacity flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed",
             (!rangeStart || !rangeEnd || analyzing) && "opacity-50"
           )}
           style={{ backgroundColor: "#A4B465" }}

@@ -113,7 +113,7 @@ export function NotificationPrompt() {
         </div>
         <button
           onClick={handleDismiss}
-          className="flex-shrink-0 text-[#6B7280] hover:text-[#1A1A1A]"
+          className="flex-shrink-0 text-[#6B7280] hover:text-[#1A1A1A] cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>

@@ -49,6 +49,7 @@ export function MonthCalendar({
 }: MonthCalendarProps) {
   const year = monthCursor.getFullYear();
   const month = monthCursor.getMonth();
+  const animationKey = `${year}-${month}`;
 
   const firstOfMonth = new Date(year, month, 1);
   // Convert JS day (0 = Sunday) to FR (0 = Monday)
@@ -73,8 +74,8 @@ export function MonthCalendar({
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-7 gap-1">
-        {cells.map((cell) => {
+      <div key={animationKey} className="grid grid-cols-7 gap-1">
+        {cells.map((cell, index) => {
           const dateStr = formatDate(cell);
           const isCurrentMonth = cell.getMonth() === month;
           const day = data[dateStr];
@@ -106,7 +107,7 @@ export function MonthCalendar({
               type="button"
               onClick={() => onDayTap(dateStr)}
               className={cn(
-                "relative aspect-square flex flex-col items-center justify-center rounded-lg text-sm transition-colors",
+                "relative aspect-square rounded-lg text-sm transition-colors overflow-hidden cursor-pointer",
                 !isCurrentMonth && "text-muted-foreground/40",
                 isCurrentMonth && !inRange && "hover:bg-muted/60",
                 inRange && "bg-[#A4B465]/10",
@@ -115,20 +116,25 @@ export function MonthCalendar({
                 isToday && !isSelected && "font-bold"
               )}
             >
-              <span className={cn("tabular-nums", isToday && "text-[#A4B465]")}>
-                {cell.getDate()}
-              </span>
-              {dots.length > 0 && (
-                <div className="absolute bottom-1 flex gap-0.5">
-                  {dots.map((color, i) => (
-                    <span
-                      key={i}
-                      className="block size-1.5 rounded-full"
-                      style={{ backgroundColor: color }}
-                    />
-                  ))}
-                </div>
-              )}
+              <div
+                className="absolute inset-0 flex flex-col items-center justify-center opacity-0 scale-[1.3] animate-calendar-cell-pop will-change-transform"
+                style={{ animationDelay: `${index * 28}ms` }}
+              >
+                <span className={cn("tabular-nums", isToday && "text-[#A4B465]")}>
+                  {cell.getDate()}
+                </span>
+                {dots.length > 0 && (
+                  <div className="absolute bottom-1 flex gap-0.5">
+                    {dots.map((color, i) => (
+                      <span
+                        key={i}
+                        className="block size-1.5 rounded-full"
+                        style={{ backgroundColor: color }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
             </button>
           );
         })}

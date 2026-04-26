@@ -66,9 +66,9 @@ function ScanForm() {
   return (
     <div className="px-4 py-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-500">
         <Link href={dashboardUrl}>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" className="cursor-pointer">
             <ArrowLeft className="size-5" />
           </Button>
         </Link>
@@ -87,33 +87,35 @@ function ScanForm() {
       {!selectedFile ? (
         <>
           {/* Upload zone */}
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="w-full aspect-[4/3] rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-4 transition-colors hover:border-foreground/40 hover:bg-muted/20 active:bg-muted/30"
-          >
-            <div
-              className="size-16 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: "var(--sane-accent-soft)" }}
+          <div className="animate-in fade-in slide-in-from-bottom-3 duration-500 delay-100 fill-mode-backwards">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full aspect-[4/3] rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-4 transition-colors hover:border-foreground/40 hover:bg-muted/20 active:bg-muted/30"
             >
-              <Camera className="size-7" style={{ color: "#A4B465" }} />
-            </div>
-            <div className="space-y-1 text-center">
-              <p className="text-sm font-medium">
-                Prendre une photo ou importer
-              </p>
-              <p className="text-xs text-muted-foreground">
-                JPG, PNG ou HEIC
-              </p>
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Upload className="size-4" />
-              <span className="text-xs">Parcourir les fichiers</span>
-            </div>
-          </button>
+              <div
+                className="size-16 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: "var(--sane-accent-soft)" }}
+              >
+                <Camera className="size-7" style={{ color: "#A4B465" }} />
+              </div>
+              <div className="space-y-1 text-center">
+                <p className="text-sm font-medium">
+                  Prendre une photo ou importer
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  JPG, PNG ou HEIC
+                </p>
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Upload className="size-4" />
+                <span className="text-xs">Parcourir les fichiers</span>
+              </div>
+            </button>
+          </div>
 
           {/* Manual entry link */}
-          <div className="text-center">
+          <div className="text-center animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 fill-mode-backwards">
             <Link
               href={dateParam ? `/meals/new?date=${dateParam}` : "/meals/new"}
               className="text-sm font-medium underline-offset-4 hover:underline"
@@ -126,7 +128,7 @@ function ScanForm() {
       ) : (
         <>
           {/* Image preview */}
-          <div className="relative">
+          <div className="relative animate-in fade-in slide-in-from-bottom-3 duration-500 delay-100 fill-mode-backwards">
             {previewUrl && (
               <img
                 src={previewUrl}
@@ -137,7 +139,7 @@ function ScanForm() {
 
             {/* Analyzing overlay */}
             {analyzing && (
-              <div className="absolute inset-0 rounded-xl bg-black/50 flex flex-col items-center justify-center gap-3">
+              <div className="absolute inset-0 rounded-xl bg-black/50 flex flex-col items-center justify-center gap-3 animate-in fade-in duration-200">
                 <Loader2 className="size-10 text-white animate-spin" />
                 <p className="text-sm font-medium text-white">
                   Analyse en cours...
@@ -148,8 +150,8 @@ function ScanForm() {
 
           {/* Not recognized modal */}
           {error && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-              <div className="bg-background rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-xl">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 animate-in fade-in duration-200">
+              <div className="bg-background rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-xl animate-in zoom-in-95 slide-in-from-bottom-2 duration-300">
                 <h3 className="text-lg font-bold text-center">Repas non reconnu</h3>
                 <div className="flex flex-col gap-3">
                   <button
@@ -176,7 +178,7 @@ function ScanForm() {
 
           {/* Action buttons */}
           {!analyzing && !error && (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 fill-mode-backwards">
               <Button
                 variant="outline"
                 size="lg"
