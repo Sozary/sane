@@ -34,7 +34,7 @@ export function ActivityGroupCard({ activities, goalBurn, date, className }: Act
   return (
     <div
       className={cn(
-        "rounded-3xl bg-card p-4 shadow-sm flex items-center gap-3",
+        "group rounded-3xl bg-card p-4 shadow-sm flex items-center gap-3",
         className,
       )}
     >
@@ -61,8 +61,8 @@ export function ActivityGroupCard({ activities, goalBurn, date, className }: Act
       </Wrapper>
 
       <div
-        className="group relative shrink-0 h-9"
-        style={{ width: 36 + visibleActivities.length * 27 }}
+        className="relative shrink-0 h-9"
+        style={{ width: 36 + visibleActivities.length * 44 }}
       >
         <Link
           href={`/activities/new?date=${date}`}
@@ -73,18 +73,19 @@ export function ActivityGroupCard({ activities, goalBurn, date, className }: Act
           <Plus className="size-4" style={{ color: "var(--sane-burn)" }} />
         </Link>
         {visibleActivities.map((a, index) => {
+          const stackIndex = visibleActivities.length - index;
           const Icon = ACTIVITY_ICONS[a.activityType] ?? Flame;
           return (
             <Link
               key={a.id}
               href={`/activities/${a.id}?date=${date}`}
-              className="absolute top-0 size-9 rounded-full ring-2 ring-card flex items-center justify-center transition-[right] duration-200 right-[var(--stack-rest-right)] md:group-hover:right-[var(--stack-hover-right)]"
+              className="absolute top-0 size-9 rounded-full ring-2 ring-card flex items-center justify-center transition-[right] duration-200 right-[var(--stack-rest-right)] group-hover:right-[var(--stack-hover-right)]"
               style={
                 {
                   backgroundColor: "var(--sane-burn-soft)",
-                  zIndex: visibleActivities.length - index,
-                  "--stack-rest-right": `${(index + 1) * 27}px`,
-                  "--stack-hover-right": `${44 + index * 18}px`,
+                  zIndex: index + 1,
+                  "--stack-rest-right": `${stackIndex * 27}px`,
+                  "--stack-hover-right": `${stackIndex * 44}px`,
                 } as React.CSSProperties
               }
               aria-label={a.activityType}

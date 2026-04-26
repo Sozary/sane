@@ -27,7 +27,7 @@ export function MealGroupCard({ mealType, label, meals, goalCalories, date, clas
   return (
     <div
       className={cn(
-        "rounded-3xl bg-card p-4 shadow-sm flex items-center gap-3",
+        "group rounded-3xl bg-card p-4 shadow-sm flex items-center gap-3",
         className,
       )}
     >
@@ -54,8 +54,8 @@ export function MealGroupCard({ mealType, label, meals, goalCalories, date, clas
       </Wrapper>
 
       <div
-        className="group relative shrink-0 h-9"
-        style={{ width: 36 + visibleMeals.length * 27 }}
+        className="relative shrink-0 h-9"
+        style={{ width: 36 + visibleMeals.length * 44 }}
       >
         <Link
           href={addHref}
@@ -65,31 +65,34 @@ export function MealGroupCard({ mealType, label, meals, goalCalories, date, clas
         >
           <Plus className="size-4" style={{ color: "var(--sane-accent)" }} />
         </Link>
-        {visibleMeals.map((meal, index) => (
-          <Link
-            key={meal.id}
-            href={`/meals/${meal.id}?date=${date}`}
-            className="absolute top-0 size-9 rounded-full ring-2 ring-card overflow-hidden bg-muted flex items-center justify-center transition-[right] duration-200 right-[var(--stack-rest-right)] md:group-hover:right-[var(--stack-hover-right)]"
-            style={
-              {
-                zIndex: visibleMeals.length - index,
-                "--stack-rest-right": `${(index + 1) * 27}px`,
-                "--stack-hover-right": `${44 + index * 18}px`,
-              } as React.CSSProperties
-            }
-            aria-label={meal.name}
-          >
-            {meal.imageUrl ? (
-              <img
-                src={meal.imageUrl}
-                alt={meal.name}
-                className="size-full object-cover"
-              />
-            ) : (
-              <UtensilsCrossed className="size-4 text-muted-foreground" />
-            )}
-          </Link>
-        ))}
+        {visibleMeals.map((meal, index) => {
+          const stackIndex = visibleMeals.length - index;
+          return (
+            <Link
+              key={meal.id}
+              href={`/meals/${meal.id}?date=${date}`}
+              className="absolute top-0 size-9 rounded-full ring-2 ring-card overflow-hidden bg-muted flex items-center justify-center transition-[right] duration-200 right-[var(--stack-rest-right)] group-hover:right-[var(--stack-hover-right)]"
+              style={
+                {
+                  zIndex: index + 1,
+                  "--stack-rest-right": `${stackIndex * 27}px`,
+                  "--stack-hover-right": `${stackIndex * 44}px`,
+                } as React.CSSProperties
+              }
+              aria-label={meal.name}
+            >
+              {meal.imageUrl ? (
+                <img
+                  src={meal.imageUrl}
+                  alt={meal.name}
+                  className="size-full object-cover"
+                />
+              ) : (
+                <UtensilsCrossed className="size-4 text-muted-foreground" />
+              )}
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
