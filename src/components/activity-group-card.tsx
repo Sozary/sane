@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Plus, Flame, Bike, Footprints, Waves, Dumbbell, Wind, type LucideIcon } from "lucide-react";
 import Link from "next/link";
@@ -25,14 +26,29 @@ export function ActivityGroupCard({ activities, goalBurn, date, className }: Act
   const totalBurned = activities.reduce((sum, a) => sum + a.caloriesBurned, 0);
   const firstActivity = activities[0];
   const visibleActivities = activities.slice(0, 3);
+  const [mobileExpanded, setMobileExpanded] = useState(false);
 
   const Wrapper: React.ElementType = firstActivity ? Link : "div";
   const wrapperProps = firstActivity
     ? { href: `/activities/${firstActivity.id}?date=${date}` }
     : {};
 
+  useEffect(() => {
+    if (!mobileExpanded) return;
+    const timeoutId = window.setTimeout(() => setMobileExpanded(false), 2200);
+    return () => window.clearTimeout(timeoutId);
+  }, [mobileExpanded]);
+
+  const handleCardClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!window.matchMedia("(hover: none)").matches) return;
+    const target = event.target as HTMLElement;
+    if (target.closest("a")) return;
+    setMobileExpanded((prev) => !prev);
+  };
+
   return (
     <div
+      onClick={handleCardClick}
       className={cn(
         "group rounded-3xl bg-card p-4 shadow-sm flex items-center gap-3",
         className,
@@ -79,7 +95,12 @@ export function ActivityGroupCard({ activities, goalBurn, date, className }: Act
             <Link
               key={a.id}
               href={`/activities/${a.id}?date=${date}`}
-              className="absolute top-0 size-9 rounded-full ring-2 ring-card flex items-center justify-center transition-[right] duration-200 right-[var(--stack-rest-right)] group-hover:right-[var(--stack-hover-right)]"
+              className={cn(
+                "absolute top-0 size-9 rounded-full ring-2 ring-card flex items-center justify-center transition-[right] duration-200",
+                mobileExpanded
+                  ? "right-[var(--stack-hover-right)]"
+                  : "right-[var(--stack-rest-right)] group-hover:right-[var(--stack-hover-right)]",
+              )}
               style={
                 {
                   backgroundColor: "var(--sane-burn-soft)",

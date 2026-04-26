@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Plus, UtensilsCrossed } from "lucide-react";
 import Link from "next/link";
@@ -20,12 +21,27 @@ export function MealGroupCard({ mealType, label, meals, goalCalories, date, clas
   const detailHref = firstMealId ? `/meals/${firstMealId}?date=${date}` : null;
   const addHref = `/scan?date=${date}&type=${mealType}`;
   const visibleMeals = meals.slice(0, 3);
+  const [mobileExpanded, setMobileExpanded] = useState(false);
 
   const Wrapper: React.ElementType = detailHref ? Link : "div";
   const wrapperProps = detailHref ? { href: detailHref } : {};
 
+  useEffect(() => {
+    if (!mobileExpanded) return;
+    const timeoutId = window.setTimeout(() => setMobileExpanded(false), 2200);
+    return () => window.clearTimeout(timeoutId);
+  }, [mobileExpanded]);
+
+  const handleCardClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!window.matchMedia("(hover: none)").matches) return;
+    const target = event.target as HTMLElement;
+    if (target.closest("a")) return;
+    setMobileExpanded((prev) => !prev);
+  };
+
   return (
     <div
+      onClick={handleCardClick}
       className={cn(
         "group rounded-3xl bg-card p-4 shadow-sm flex items-center gap-3",
         className,
@@ -71,7 +87,12 @@ export function MealGroupCard({ mealType, label, meals, goalCalories, date, clas
             <Link
               key={meal.id}
               href={`/meals/${meal.id}?date=${date}`}
-              className="absolute top-0 size-9 rounded-full ring-2 ring-card overflow-hidden bg-muted flex items-center justify-center transition-[right] duration-200 right-[var(--stack-rest-right)] group-hover:right-[var(--stack-hover-right)]"
+              className={cn(
+                "absolute top-0 size-9 rounded-full ring-2 ring-card overflow-hidden bg-muted flex items-center justify-center transition-[right] duration-200",
+                mobileExpanded
+                  ? "right-[var(--stack-hover-right)]"
+                  : "right-[var(--stack-rest-right)] group-hover:right-[var(--stack-hover-right)]",
+              )}
               style={
                 {
                   zIndex: index + 1,
