@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface CalorieRingProps {
@@ -12,6 +12,7 @@ interface CalorieRingProps {
   trackColor?: string;
   className?: string;
   showTipDot?: boolean;
+  loading?: boolean;
   children?: React.ReactNode;
 }
 
@@ -24,17 +25,46 @@ export function CalorieRing({
   trackColor = "rgba(0,0,0,0.05)",
   className,
   showTipDot = true,
+  loading = false,
   children,
 }: CalorieRingProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-
-  // Animate progress from 0 on mount so the ring fills in nicely.
+  const targetValue = max > 0 ? Math.min(value, max) : 0;
   const [animatedValue, setAnimatedValue] = useState(0);
+  const previousValueRef = useRef(0);
+
   useEffect(() => {
-    const id = window.setTimeout(() => setAnimatedValue(value), 60);
-    return () => window.clearTimeout(id);
-  }, [value]);
+    if (loading) {
+      return;
+    }
+
+    const startValue = previousValueRef.current;
+    const endValue = targetValue;
+    const duration = 1100;
+    const startAt = window.performance.now();
+    let frameId = 0;
+
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+
+    const tick = (now: number) => {
+      const elapsed = now - startAt;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = easeOutCubic(progress);
+      const nextValue = startValue + (endValue - startValue) * eased;
+      setAnimatedValue(nextValue);
+
+      if (progress < 1) {
+        frameId = window.requestAnimationFrame(tick);
+      } else {
+        previousValueRef.current = endValue;
+      }
+    };
+
+    frameId = window.requestAnimationFrame(tick);
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [loading, targetValue]);
 
   const progress = max > 0 ? Math.min(animatedValue / max, 1) : 0;
   const strokeDashoffset = circumference * (1 - progress);
@@ -109,9 +139,6 @@ export function CalorieRing({
             strokeDashoffset={strokeDashoffset}
             opacity={0.55}
             filter={`url(#blur-${size})`}
-            style={{
-              transition: "stroke-dashoffset 1100ms cubic-bezier(0.22, 1, 0.36, 1)",
-            }}
           />
         </g>
 
@@ -126,19 +153,15 @@ export function CalorieRing({
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
-          style={{
-            transition: "stroke-dashoffset 1100ms cubic-bezier(0.22, 1, 0.36, 1)",
-          }}
         />
-        {showTipDot && progress > 0 ? (
+        {showTipDot ? (
           <circle
             cx={dotCx}
             cy={dotCy}
             r={dotR}
             fill={color}
             style={{
-              transition:
-                "cx 1100ms cubic-bezier(0.22, 1, 0.36, 1), cy 1100ms cubic-bezier(0.22, 1, 0.36, 1)",
+              opacity: progress > 0 ? 1 : 0,
             }}
           />
         ) : null}

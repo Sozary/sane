@@ -36,6 +36,7 @@ export function SummaryCard({
           size={150}
           strokeWidth={4}
           color="var(--sane-accent)"
+          loading={loading}
         >
           {loading ? (
             <>

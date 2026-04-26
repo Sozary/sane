@@ -182,11 +182,15 @@ export function DateNavigator({ date, onDateChange, className, dayDots }: DateNa
                 >
                   {selected && isToday ? "Auj." : dayLabel}
                 </span>
-                {selected ? (
-                  <span className="text-[10px] text-white/80 leading-tight">
-                    {MONTH_LABELS_FR[d.getMonth()]}
-                  </span>
-                ) : null}
+                <span
+                  className={cn(
+                    "text-[10px] leading-tight",
+                    selected ? "text-white/80" : "invisible",
+                  )}
+                  aria-hidden={!selected}
+                >
+                  {selected ? MONTH_LABELS_FR[d.getMonth()] : "Mois"}
+                </span>
                 <span className="text-base font-semibold tabular-nums leading-tight">
                   {d.getDate()}
                 </span>
