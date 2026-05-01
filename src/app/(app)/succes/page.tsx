@@ -6,11 +6,19 @@ export default function SuccesPage() {
   return (
     <div className="px-4 py-6 space-y-6">
       <div className="flex flex-col items-center text-center pt-8 gap-4">
-        <div
-          className="size-20 rounded-full flex items-center justify-center text-white shadow-lg"
-          style={{ backgroundColor: "#A4B465" }}
-        >
-          <Trophy className="size-10" />
+        <div className="relative">
+          <div
+            className="size-20 rounded-full flex items-center justify-center text-white shadow-lg"
+            style={{ backgroundColor: "#A4B465" }}
+          >
+            <Trophy className="size-10" />
+          </div>
+          <span
+            className="absolute -top-2 -right-4 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full text-white shadow"
+            style={{ backgroundColor: "#E8384F" }}
+          >
+            Bientôt
+          </span>
         </div>
         <div>
           <h1 className="text-2xl font-bold">Succès</h1>
