@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Loader2, Sparkles, CalendarDays, MessageCircleQuestion } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MonthCalendar, type DayAggregate } from "@/components/month-calendar";
 import { MacroBar } from "@/components/macro-bar";
@@ -12,8 +12,6 @@ import {
 } from "@/components/period-analysis-result";
 import { Card, CardContent } from "@/components/ui/card";
 import { AskDataPanel } from "@/components/ask-data-panel";
-
-type View = "period" | "ask";
 
 type Preset = "7d" | "30d" | "month" | "custom";
 
@@ -60,7 +58,6 @@ function daysBetweenInclusive(start: string, end: string) {
 export default function AnalysePage() {
   const today = useMemo(() => new Date(), []);
 
-  const [view, setView] = useState<View>("period");
   const [monthCursor, setMonthCursor] = useState<Date>(
     () => new Date(today.getFullYear(), today.getMonth(), 1)
   );
@@ -185,83 +182,39 @@ export default function AnalysePage() {
     rangeStart && rangeEnd ? daysBetweenInclusive(rangeStart, rangeEnd) : 0;
   const monthReady = !loadingMonth && monthData?.month === currentMonthKey;
 
+  const askPeriod =
+    rangeStart && rangeEnd ? { start: rangeStart, end: rangeEnd } : null;
+
   return (
     <div className="px-4 py-6 pb-28 space-y-6">
-      <ViewToggle value={view} onChange={setView} />
-
-      {view === "ask" ? (
-        <AskDataPanel />
-      ) : (
-        <PeriodView
-          monthCursor={monthCursor}
-          monthData={monthData}
-          monthReady={monthReady}
-          loadingMonth={loadingMonth}
-          preset={preset}
-          rangeStart={rangeStart}
-          rangeEnd={rangeEnd}
-          selectedDay={selectedDay}
-          selectedDayData={selectedDayData}
-          selectedDayHasData={selectedDayHasData}
-          rangeDays={rangeDays}
-          analyzing={analyzing}
-          analysis={analysis}
-          analysisError={analysisError}
-          onPrevMonth={prevMonth}
-          onNextMonth={nextMonth}
-          onPresetChange={(p) => {
-            setPreset(p);
-            if (p === "custom") {
-              setRangeStart(null);
-              setRangeEnd(null);
-            }
-          }}
-          onDayTap={handleDayTap}
-          onAnalyze={handleAnalyze}
-        />
-      )}
-    </div>
-  );
-}
-
-function ViewToggle({
-  value,
-  onChange,
-}: {
-  value: View;
-  onChange: (v: View) => void;
-}) {
-  const items: { id: View; label: string; icon: typeof CalendarDays }[] = [
-    { id: "period", label: "Période", icon: CalendarDays },
-    { id: "ask", label: "Questions", icon: MessageCircleQuestion },
-  ];
-  return (
-    <div className="relative grid grid-cols-2 gap-1 p-1 rounded-2xl bg-card shadow-sm">
-      <div
-        className="absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-xl transition-transform duration-300 ease-out"
-        style={{
-          backgroundColor: "var(--sane-plus)",
-          transform: value === "period" ? "translateX(0)" : "translateX(calc(100% + 4px))",
+      <PeriodView
+        monthCursor={monthCursor}
+        monthData={monthData}
+        monthReady={monthReady}
+        loadingMonth={loadingMonth}
+        preset={preset}
+        rangeStart={rangeStart}
+        rangeEnd={rangeEnd}
+        selectedDay={selectedDay}
+        selectedDayData={selectedDayData}
+        selectedDayHasData={selectedDayHasData}
+        rangeDays={rangeDays}
+        analyzing={analyzing}
+        analysis={analysis}
+        analysisError={analysisError}
+        askPeriod={askPeriod}
+        onPrevMonth={prevMonth}
+        onNextMonth={nextMonth}
+        onPresetChange={(p) => {
+          setPreset(p);
+          if (p === "custom") {
+            setRangeStart(null);
+            setRangeEnd(null);
+          }
         }}
-        aria-hidden
+        onDayTap={handleDayTap}
+        onAnalyze={handleAnalyze}
       />
-      {items.map((it) => {
-        const Icon = it.icon;
-        const active = value === it.id;
-        return (
-          <button
-            key={it.id}
-            onClick={() => onChange(it.id)}
-            className={cn(
-              "relative z-10 h-10 rounded-xl flex items-center justify-center gap-2 text-sm font-medium transition-colors",
-              active ? "text-white" : "text-foreground/70 hover:text-foreground"
-            )}
-          >
-            <Icon className="size-4" />
-            {it.label}
-          </button>
-        );
-      })}
     </div>
   );
 }
@@ -281,6 +234,7 @@ interface PeriodViewProps {
   analyzing: boolean;
   analysis: PeriodAnalysisData | null;
   analysisError: string | null;
+  askPeriod: { start: string; end: string } | null;
   onPrevMonth: () => void;
   onNextMonth: () => void;
   onPresetChange: (p: Preset) => void;
@@ -302,6 +256,7 @@ function PeriodView({
   analyzing,
   analysis,
   analysisError,
+  askPeriod,
   onPrevMonth,
   onNextMonth,
   onPresetChange,
@@ -535,6 +490,8 @@ function PeriodView({
       </Card>
 
       {analysis && <PeriodAnalysisResult data={analysis} />}
+
+      <AskDataPanel period={askPeriod} />
     </div>
   );
 }

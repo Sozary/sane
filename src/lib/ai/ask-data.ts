@@ -271,9 +271,22 @@ async function executeTool(
   }
 }
 
-function buildSystemPrompt(today: Date): string {
+function buildSystemPrompt(today: Date, period?: { start: string; end: string }): string {
   const todayStr = formatDateLocal(today);
   const dow = frenchDow(today);
+
+  const periodBlock = period
+    ? `
+PÉRIODE ACTIVE (ne change que si l'utilisateur en demande explicitement une autre)
+- Du ${period.start} au ${period.end} inclus
+- Toutes les questions s'appliquent par défaut à cette période
+- N'élargis cette période que si l'utilisateur le demande clairement (ex: "et le mois dernier ?", "compare à la semaine d'avant")
+`
+    : "";
+
+  const defaultPeriodRule = period
+    ? `- Quand l'utilisateur ne précise pas de période, utilise la PÉRIODE ACTIVE indiquée ci-dessus.`
+    : `- Si l'utilisateur ne précise pas de période, utilise par défaut les 7 derniers jours.`;
 
   return `Tu es Sane, un assistant nutritionnel intelligent qui aide l'utilisateur à comprendre ses propres données de suivi.
 
@@ -283,12 +296,12 @@ CONTEXTE TEMPOREL
 - "la semaine dernière" = la semaine ISO précédente
 - "ce mois" = du 1er du mois courant à aujourd'hui
 - "hier", "avant-hier", "il y a X jours" : calcule par rapport à aujourd'hui
-
+${periodBlock}
 RÈGLES
 - Réponds toujours en français, ton chaleureux mais factuel.
 - Utilise les outils pour récupérer les données AVANT de répondre. Ne devine jamais des chiffres.
 - Si la question concerne une comparaison entre deux périodes, fais deux appels d'outils.
-- Si l'utilisateur ne précise pas de période, utilise par défaut les 7 derniers jours.
+${defaultPeriodRule}
 - Si aucune donnée n'existe pour la période demandée, dis-le clairement et propose une alternative.
 - Sois bref et scannable. Pas de paragraphe long. Tu peux utiliser des listes courtes.
 - Mentionne les chiffres clés directement dans le texte.
@@ -409,10 +422,11 @@ function normalizeAnswer(raw: unknown, fallback: string): AskAnswer {
 export async function askData(
   userId: string,
   message: string,
-  history: AskMessage[]
+  history: AskMessage[],
+  period?: { start: string; end: string }
 ): Promise<AskAnswer> {
   const today = new Date();
-  const system = buildSystemPrompt(today);
+  const system = buildSystemPrompt(today, period);
 
   const messages: Anthropic.Messages.MessageParam[] = [
     ...history.map((h) => ({ role: h.role, content: h.content })),

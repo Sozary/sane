@@ -5,10 +5,21 @@ export const askMessageSchema = z.object({
   content: z.string().min(1).max(4000),
 });
 
-export const askSchema = z.object({
-  message: z.string().min(1).max(500),
-  history: z.array(askMessageSchema).max(20).optional().default([]),
-});
+export const askSchema = z
+  .object({
+    message: z.string().min(1).max(500),
+    history: z.array(askMessageSchema).max(20).optional().default([]),
+    period: z
+      .object({
+        start: z.string().date(),
+        end: z.string().date(),
+      })
+      .optional(),
+  })
+  .refine((v) => !v.period || v.period.start <= v.period.end, {
+    message: "period.start must be <= period.end",
+    path: ["period"],
+  });
 
 export type AskMessage = z.infer<typeof askMessageSchema>;
 export type AskInput = z.infer<typeof askSchema>;

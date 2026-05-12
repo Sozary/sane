@@ -21,7 +21,12 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await askData(session.user.id, parsed.data.message, parsed.data.history);
+    const result = await askData(
+      session.user.id,
+      parsed.data.message,
+      parsed.data.history,
+      parsed.data.period
+    );
     return NextResponse.json(result);
   } catch (error) {
     console.error("Ask data failed:", error);

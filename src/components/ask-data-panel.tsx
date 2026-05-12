@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowUp, Sparkles, Quote } from "lucide-react";
+import { ArrowUp, MessageCircleQuestion, Quote, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AskAnswer, AskMessage } from "@/lib/validations/ask";
 
@@ -14,27 +14,17 @@ interface ConversationTurn {
 }
 
 const SUGGESTIONS = [
-  {
-    icon: "01",
-    title: "Mon repas le plus calorique cette semaine",
-    accent: "var(--sane-accent)",
-  },
-  {
-    icon: "02",
-    title: "Combien de protéines je mange en moyenne ?",
-    accent: "var(--sane-protein)",
-  },
-  {
-    icon: "03",
-    title: "Comparer cette semaine à la semaine dernière",
-    accent: "var(--sane-fat)",
-  },
-  {
-    icon: "04",
-    title: "Quels jours j'ai dépassé mon objectif ?",
-    accent: "var(--sane-burn)",
-  },
+  "Mon repas le plus calorique de la période",
+  "Quels jours j'ai dépassé mon objectif ?",
+  "Combien de protéines en moyenne par jour ?",
+  "Compare cette période à la précédente",
+  "Mes 3 plus grosses sources de glucides",
+  "Mon meilleur jour côté équilibre",
 ] as const;
+
+interface AskDataPanelProps {
+  period: { start: string; end: string } | null;
+}
 
 function formatDayShortFr(dateStr: string) {
   const d = new Date(dateStr + "T00:00:00");
@@ -94,22 +84,17 @@ function MiniBarChart({ chart }: { chart: NonNullable<AskAnswer["chart"]> }) {
           const h = Math.max((point.value / max) * 100, 1.5);
           const overGoal = chart.goal && point.value > chart.goal;
           return (
-            <div
-              key={i}
-              className="flex-1 flex flex-col items-center gap-1.5 group"
-            >
-              <div className="relative flex-1 w-full flex items-end">
-                <div
-                  className="w-full rounded-t-md transition-all duration-300"
-                  style={{
-                    height: `${h}%`,
-                    backgroundColor: overGoal
-                      ? "var(--sane-protein)"
-                      : "var(--sane-plus)",
-                    opacity: 0.92,
-                  }}
-                />
-              </div>
+            <div key={i} className="flex-1 flex items-end">
+              <div
+                className="w-full rounded-t-md transition-all duration-300"
+                style={{
+                  height: `${h}%`,
+                  backgroundColor: overGoal
+                    ? "var(--sane-protein)"
+                    : "var(--sane-plus)",
+                  opacity: 0.92,
+                }}
+              />
             </div>
           );
         })}
@@ -145,9 +130,7 @@ function Highlights({ items }: { items: NonNullable<AskAnswer["highlights"]> }) 
           <div
             key={i}
             className="relative rounded-2xl p-3 overflow-hidden"
-            style={{
-              backgroundColor: "rgba(0,0,0,0.025)",
-            }}
+            style={{ backgroundColor: "rgba(0,0,0,0.025)" }}
           >
             <div
               className="absolute left-0 top-3 bottom-3 w-[3px] rounded-r-full"
@@ -247,7 +230,6 @@ interface AnswerCardProps {
 function AnswerCard({ turn, onFollowUp }: AnswerCardProps) {
   return (
     <article className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-      {/* Question as serif italic headline */}
       <div className="px-1 mb-3 flex gap-3 items-start">
         <Quote
           className="size-4 mt-2 shrink-0 -scale-x-100"
@@ -261,7 +243,6 @@ function AnswerCard({ turn, onFollowUp }: AnswerCardProps) {
         </h3>
       </div>
 
-      {/* Answer body */}
       <div className="relative bg-card rounded-3xl p-5 shadow-sm overflow-hidden">
         <div
           className="absolute -top-12 -right-12 size-40 rounded-full pointer-events-none"
@@ -327,7 +308,6 @@ function AnswerCard({ turn, onFollowUp }: AnswerCardProps) {
         )}
       </div>
 
-      {/* Follow-ups */}
       {turn.state === "ready" &&
         turn.answer?.followUps &&
         turn.answer.followUps.length > 0 && (
@@ -353,7 +333,7 @@ function AnswerCard({ turn, onFollowUp }: AnswerCardProps) {
   );
 }
 
-export function AskDataPanel() {
+export function AskDataPanel({ period }: AskDataPanelProps) {
   const [turns, setTurns] = useState<ConversationTurn[]>([]);
   const [draft, setDraft] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -363,7 +343,7 @@ export function AskDataPanel() {
   const ask = useCallback(
     async (question: string) => {
       const trimmed = question.trim();
-      if (!trimmed || submitting) return;
+      if (!trimmed || submitting || !period) return;
 
       const id = crypto.randomUUID();
       const history: AskMessage[] = turns
@@ -384,7 +364,7 @@ export function AskDataPanel() {
         const res = await fetch("/api/analyse/ask", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: trimmed, history }),
+          body: JSON.stringify({ message: trimmed, history, period }),
         });
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
@@ -420,7 +400,7 @@ export function AskDataPanel() {
         setSubmitting(false);
       }
     },
-    [submitting, turns]
+    [submitting, turns, period]
   );
 
   useEffect(() => {
@@ -435,93 +415,117 @@ export function AskDataPanel() {
   };
 
   const empty = turns.length === 0;
+  const disabled = !period || submitting;
+  const placeholder = !period
+    ? "Sélectionne une période d'abord…"
+    : empty
+    ? "Pose ta question sur cette période…"
+    : "Continue la conversation…";
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      {empty && (
-        <div className="space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-500">
-          {/* Hero */}
-          <div className="relative rounded-3xl bg-card p-6 overflow-hidden shadow-sm">
-            <div
-              className="absolute inset-0 pointer-events-none opacity-60"
-              aria-hidden
-              style={{
-                background:
-                  "radial-gradient(circle at 110% -20%, var(--sane-accent-soft) 0%, transparent 55%), radial-gradient(circle at -10% 120%, #FFE9C4 0%, transparent 50%)",
-              }}
-            />
-            <div className="relative">
-              <div className="flex items-center gap-2">
-                <Sparkles
-                  className="size-3.5"
-                  style={{ color: "var(--sane-accent)" }}
-                />
-                <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
-                  Demande à Sane
-                </span>
-              </div>
-              <h2
-                className="mt-3 font-serif text-[28px] leading-[1.05] text-foreground"
-                style={{ fontFamily: "var(--font-serif), serif" }}
-              >
-                <span className="italic">Interroge</span> tes données{" "}
-                <span className="italic">comme</span> tu en parlerais
-                <span style={{ color: "var(--sane-accent)" }}>.</span>
-              </h2>
-              <p className="mt-3 text-sm text-muted-foreground leading-relaxed max-w-[34ch]">
-                Pose une question en langage naturel sur tes repas, ton activité
-                ou tes objectifs. Sane parcourt ton historique et te répond avec
-                les chiffres.
-              </p>
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150 fill-mode-backwards">
+      <div className="relative bg-card rounded-3xl shadow-sm overflow-hidden">
+        <div
+          className="absolute inset-0 pointer-events-none"
+          aria-hidden
+          style={{
+            background:
+              "radial-gradient(circle at 100% 0%, var(--sane-accent-soft) 0%, transparent 50%)",
+            opacity: 0.45,
+          }}
+        />
+        <div className="relative p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <MessageCircleQuestion
+                className="size-3.5"
+                style={{ color: "var(--sane-accent)" }}
+              />
+              <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                Demande à Sane
+              </span>
             </div>
+            {turns.length > 0 && (
+              <button
+                onClick={() => setTurns([])}
+                className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <RotateCcw className="size-3" />
+                Effacer
+              </button>
+            )}
           </div>
 
-          {/* Suggestions */}
-          <div>
-            <div className="px-1 mb-2 text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
-              Pour commencer
+          <h3
+            className="font-serif text-[22px] leading-[1.15] text-foreground"
+            style={{ fontFamily: "var(--font-serif), serif" }}
+          >
+            <span className="italic">Pose une question</span> sur{" "}
+            {period ? "cette période" : "ta période"}
+            <span style={{ color: "var(--sane-accent)" }}>.</span>
+          </h3>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              ask(draft);
+            }}
+            className="relative"
+          >
+            <div
+              className={cn(
+                "relative rounded-2xl bg-background/70 ring-1 ring-black/5 overflow-hidden transition-all",
+                "focus-within:ring-2 focus-within:ring-[var(--sane-accent)]"
+              )}
+            >
+              <textarea
+                ref={inputRef}
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={handleKey}
+                placeholder={placeholder}
+                rows={1}
+                maxLength={500}
+                disabled={disabled}
+                className="w-full resize-none bg-transparent px-4 pt-3.5 pb-3 pr-12 text-[15px] text-foreground placeholder:text-muted-foreground focus:outline-none disabled:opacity-60"
+                style={{ minHeight: 52, maxHeight: 140 }}
+              />
+              <button
+                type="submit"
+                disabled={!draft.trim() || disabled}
+                aria-label="Envoyer"
+                className={cn(
+                  "absolute right-2 bottom-2 size-9 rounded-xl flex items-center justify-center text-white transition-all",
+                  "disabled:opacity-30 disabled:cursor-not-allowed active:scale-95"
+                )}
+                style={{ backgroundColor: "var(--sane-plus)" }}
+              >
+                <ArrowUp className="size-4" />
+              </button>
             </div>
-            <div className="grid grid-cols-1 gap-2">
-              {SUGGESTIONS.map((s, i) => (
-                <button
-                  key={s.title}
-                  onClick={() => ask(s.title)}
-                  className="group relative text-left rounded-2xl bg-card p-4 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 overflow-hidden"
-                  style={{ animationDelay: `${i * 60}ms` }}
-                >
-                  <div
-                    className="absolute right-0 top-0 bottom-0 w-1 transition-all group-hover:w-1.5"
-                    style={{ backgroundColor: s.accent }}
-                    aria-hidden
-                  />
-                  <div className="flex items-baseline gap-3">
-                    <span
-                      className="font-serif text-base tabular-nums shrink-0"
-                      style={{
-                        fontFamily: "var(--font-serif), serif",
-                        color: s.accent,
-                        fontStyle: "italic",
-                      }}
-                    >
-                      {s.icon}
-                    </span>
-                    <span
-                      className="font-serif italic text-[17px] leading-tight text-foreground"
-                      style={{ fontFamily: "var(--font-serif), serif" }}
-                    >
-                      {s.title}
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
+          </form>
+
+          <div className="flex gap-1.5 overflow-x-auto -mx-1 px-1 pb-1 no-scrollbar">
+            {SUGGESTIONS.map((s) => (
+              <button
+                key={s}
+                onClick={() => ask(s)}
+                disabled={disabled}
+                className={cn(
+                  "shrink-0 text-[12px] px-3 h-8 rounded-full bg-background/80 border border-border/60 transition-colors",
+                  "hover:bg-muted/60 hover:border-border disabled:opacity-50 disabled:cursor-not-allowed",
+                  "text-foreground/80"
+                )}
+              >
+                {s}
+              </button>
+            ))}
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Conversation */}
       {!empty && (
-        <div className="space-y-6">
+        <div className="space-y-6 pt-2">
           {turns.map((turn) => (
             <AnswerCard key={turn.id} turn={turn} onFollowUp={ask} />
           ))}
@@ -529,49 +533,11 @@ export function AskDataPanel() {
         </div>
       )}
 
-      {/* Composer */}
-      <div className={cn("sticky bottom-20 z-10", empty ? "" : "pt-2")}>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            ask(draft);
-          }}
-          className="relative"
-        >
-          <div className="relative rounded-3xl bg-card shadow-lg ring-1 ring-black/5 overflow-hidden focus-within:ring-2 focus-within:ring-[var(--sane-accent)] transition-all">
-            <textarea
-              ref={inputRef}
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={handleKey}
-              placeholder={empty ? "Pose ta question…" : "Continue la conversation…"}
-              rows={1}
-              maxLength={500}
-              disabled={submitting}
-              className="w-full resize-none bg-transparent px-5 pt-4 pb-3 pr-14 text-[15px] text-foreground placeholder:text-muted-foreground focus:outline-none disabled:opacity-60"
-              style={{ minHeight: 56, maxHeight: 140 }}
-            />
-            <button
-              type="submit"
-              disabled={!draft.trim() || submitting}
-              aria-label="Envoyer"
-              className={cn(
-                "absolute right-2.5 bottom-2.5 size-10 rounded-2xl flex items-center justify-center text-white transition-all",
-                "disabled:opacity-30 disabled:cursor-not-allowed",
-                "active:scale-95"
-              )}
-              style={{ backgroundColor: "var(--sane-plus)" }}
-            >
-              <ArrowUp className="size-5" />
-            </button>
-          </div>
-          {turns.length > 0 && (
-            <p className="mt-2 text-center text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-              Sane peut faire des erreurs. Vérifie les chiffres importants.
-            </p>
-          )}
-        </form>
-      </div>
+      {!empty && (
+        <p className="text-center text-[10px] uppercase tracking-[0.18em] text-muted-foreground pt-1">
+          Sane peut faire des erreurs. Vérifie les chiffres importants.
+        </p>
+      )}
     </div>
   );
 }
