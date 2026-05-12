@@ -41,6 +41,35 @@ function toneToColor(tone: string | undefined) {
   }
 }
 
+function formatCompactValue(raw: string): string {
+  const trimmed = raw.trim();
+  // Match a pure numeric value, optionally with thousands separators (space / nbsp / thin space)
+  // and optional decimal part (comma or dot). Returns the original string if it's not a clean number.
+  const cleaned = trimmed.replace(/[\s   ]/g, "").replace(",", ".");
+  if (!/^-?\d+(\.\d+)?$/.test(cleaned)) return raw;
+  const n = Number(cleaned);
+  if (!Number.isFinite(n)) return raw;
+  const abs = Math.abs(n);
+  if (abs >= 1_000_000) {
+    const v = n / 1_000_000;
+    return `${formatNumberFr(v, abs >= 10_000_000 ? 0 : 1)}M`;
+  }
+  if (abs >= 10_000) {
+    return `${formatNumberFr(n / 1_000, 0)}k`;
+  }
+  if (abs >= 1_000) {
+    return `${formatNumberFr(n / 1_000, 1)}k`;
+  }
+  return formatNumberFr(n, n % 1 === 0 ? 0 : 1);
+}
+
+function formatNumberFr(n: number, decimals: number): string {
+  return n.toLocaleString("fr-FR", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+}
+
 function MiniBarChart({ chart }: { chart: NonNullable<AskAnswer["chart"]> }) {
   const max = Math.max(...chart.data.map((d) => d.value), chart.goal ?? 0, 1);
   const goalPct = chart.goal ? (chart.goal / max) * 100 : null;
@@ -77,16 +106,15 @@ function MiniBarChart({ chart }: { chart: NonNullable<AskAnswer["chart"]> }) {
           const h = Math.max((point.value / max) * 100, 2);
           const overGoal = chart.goal && point.value > chart.goal;
           return (
-            <div key={i} className="flex-1 flex items-end min-w-0">
-              <div
-                className="w-full rounded-t-sm transition-all duration-300"
-                style={{
-                  height: `${h}%`,
-                  backgroundColor: overGoal ? "#F5B547" : "#1F1F1F",
-                  opacity: 0.9,
-                }}
-              />
-            </div>
+            <div
+              key={i}
+              className="flex-1 min-w-0 rounded-t-sm transition-all duration-300"
+              style={{
+                height: `${h}%`,
+                backgroundColor: overGoal ? "#F5B547" : "#1F1F1F",
+                opacity: 0.9,
+              }}
+            />
           );
         })}
       </div>
@@ -111,29 +139,33 @@ function Highlights({ items }: { items: NonNullable<AskAnswer["highlights"]> }) 
         "grid gap-2",
         items.length === 1 && "grid-cols-1",
         items.length === 2 && "grid-cols-2",
-        items.length === 3 && "grid-cols-3 sm:grid-cols-3",
+        items.length === 3 && "grid-cols-3",
         items.length >= 4 && "grid-cols-2"
       )}
     >
       {items.map((h, i) => {
         const color = toneToColor(h.tone);
+        const formatted = formatCompactValue(h.value);
         return (
           <div
             key={i}
-            className="rounded-xl bg-muted/40 p-3 min-w-0"
+            className="rounded-xl bg-muted/40 p-2.5 min-w-0"
           >
-            <div className="text-[11px] text-muted-foreground leading-tight truncate">
+            <div
+              className="text-[11px] text-muted-foreground leading-tight line-clamp-2 break-words"
+              title={h.label}
+            >
               {h.label}
             </div>
             <div className="mt-1 flex items-baseline gap-1 min-w-0">
               <span
-                className="text-2xl font-bold tabular-nums leading-none truncate"
+                className="text-xl font-bold tabular-nums leading-none"
                 style={{ color }}
               >
-                {h.value}
+                {formatted}
               </span>
               {h.unit && (
-                <span className="text-[11px] text-muted-foreground shrink-0">
+                <span className="text-[10px] text-muted-foreground shrink-0">
                   {h.unit}
                 </span>
               )}
@@ -425,7 +457,7 @@ export function AskDataPanel({ period }: AskDataPanelProps) {
                 rows={1}
                 maxLength={500}
                 disabled={disabled}
-                className="w-full resize-none bg-transparent px-3.5 pt-3 pb-3 pr-12 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none disabled:opacity-60"
+                className="block w-full resize-none bg-transparent px-3.5 py-3 pr-12 text-sm leading-6 text-foreground placeholder:text-muted-foreground focus:outline-none disabled:opacity-60"
                 style={{ minHeight: 48, maxHeight: 140 }}
               />
               <button
