@@ -1,6 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
-
-const anthropic = new Anthropic();
+import { createMessage } from "./model";
 
 function extractJSON(text: string): unknown {
   // Try direct parse first
@@ -52,8 +50,7 @@ Règles pour le score :
 Sois précis dans tes estimations en te basant sur la taille apparente des portions.`;
 
 export async function analyzeMealPhoto(imageBase64: string, mimeType: string): Promise<MealAnalysisResult> {
-  const response = await anthropic.messages.create({
-    model: "claude-sonnet-4-20250514",
+  const response = await createMessage({
     max_tokens: 1024,
     messages: [
       {
@@ -75,7 +72,7 @@ export async function analyzeMealPhoto(imageBase64: string, mimeType: string): P
       },
     ],
     system: SYSTEM_PROMPT,
-  });
+  }, { requireVision: true });
 
   const textBlock = response.content.find((block) => block.type === "text");
   if (!textBlock || textBlock.type !== "text") {
@@ -112,8 +109,7 @@ Règles pour le score :
 Estime des portions standard si aucune quantité n'est précisée.`;
 
 export async function analyzeMealDescription(description: string): Promise<MealAnalysisResult> {
-  const response = await anthropic.messages.create({
-    model: "claude-sonnet-4-20250514",
+  const response = await createMessage({
     max_tokens: 1024,
     messages: [
       {

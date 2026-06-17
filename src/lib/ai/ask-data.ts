@@ -3,10 +3,8 @@ import { and, eq, gte, lte, desc, asc, ilike } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { meals, activities, dailyLogs, users } from "@/lib/db/schema";
 import type { AskAnswer, AskMessage } from "@/lib/validations/ask";
+import { createMessage } from "./model";
 
-const anthropic = new Anthropic();
-
-const MODEL = "claude-sonnet-4-20250514";
 const MAX_ITERATIONS = 6;
 
 function pad2(n: number) {
@@ -441,8 +439,7 @@ export async function askData(
   let lastTextBlock = "";
 
   for (let i = 0; i < MAX_ITERATIONS; i++) {
-    const response = await anthropic.messages.create({
-      model: MODEL,
+    const response = await createMessage({
       max_tokens: 2048,
       system,
       tools: TOOLS,

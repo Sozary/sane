@@ -1,6 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
-
-const anthropic = new Anthropic();
+import { createMessage } from "./model";
 
 function extractJSON(text: string): unknown {
   try {
@@ -109,8 +107,7 @@ export async function analyzePeriod(
   startDate: string,
   endDate: string
 ): Promise<PeriodAnalysisResult> {
-  const response = await anthropic.messages.create({
-    model: "claude-sonnet-4-20250514",
+  const response = await createMessage({
     max_tokens: 1500,
     system: SYSTEM_PROMPT,
     messages: [
